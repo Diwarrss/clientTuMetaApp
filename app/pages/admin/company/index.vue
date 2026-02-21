@@ -18,8 +18,11 @@ const form = ref({
   twitter_url: '',
 })
 
+const hasCompany = ref(true)
+
 const fetchCompany = async () => {
   loading.value = true
+  hasCompany.value = true
   try {
     const res = await $api<{
       data: {
@@ -40,8 +43,13 @@ const fetchCompany = async () => {
       twitter_url: d.twitter_url || '',
     }
   }
-  catch (e) {
-    toast.error('Error al cargar la empresa')
+  catch (e: any) {
+    if ((e?.statusCode === 404 || e?.status === 404) || e?.data?.message?.includes('empresa asignada')) {
+      hasCompany.value = false
+    }
+    else {
+      toast.error('Error al cargar la empresa')
+    }
   }
   finally {
     loading.value = false
@@ -87,6 +95,15 @@ onMounted(fetchCompany)
 
     <div v-if="loading" class="flex justify-center py-12">
       <Icon name="i-lucide-loader-2" class="size-8 animate-spin text-muted-foreground" />
+    </div>
+
+    <div v-else-if="!hasCompany" class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-6">
+      <p class="text-amber-200 font-medium">
+        No tienes empresa asignada
+      </p>
+      <p class="mt-2 text-sm text-slate-400">
+        Tu usuario no está asociado a ninguna empresa. Contacta al administrador para que te asigne a una empresa y puedas gestionar los enlaces (web, redes sociales) que se muestran en la página de tus eventos.
+      </p>
     </div>
 
     <form v-else class="max-w-xl space-y-4" @submit.prevent="handleSubmit">

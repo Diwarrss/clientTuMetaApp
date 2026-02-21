@@ -79,12 +79,12 @@ export function usePermissions() {
   }
 
   /**
-   * Verifica si el usuario es super administrador (ve todas las sucursales sin restricción)
+   * Verifica si el usuario es super administrador (ve todas las empresas sin restricción)
    */
   const isSuperAdmin = computed(() => hasRole('super_admin'))
 
   /**
-   * Verifica si el usuario es administrador (admin o super_admin; visibilidad según sucursales permitidas)
+   * Verifica si el usuario es administrador (admin o super_admin; visibilidad según empresa asignada)
    */
   const isAdmin = computed(() => hasRole('admin') || hasRole('super_admin'))
 

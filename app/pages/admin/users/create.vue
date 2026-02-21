@@ -16,24 +16,21 @@ const form = ref({
   email: '',
   password: '',
   password_confirmation: '',
-  sucursal_id: null as number | null,
-  allowed_sucursal_ids: [] as number[],
+  company_id: null as number | null,
   roles: [] as string[],
 })
 
 const roles = ref<Role[]>([])
-const sucursales = ref<Array<{ id: number; name: string; code: string | null; is_main?: boolean }>>([])
+const companies = ref<Array<{ id: number; name: string; slug: string }>>([])
 const loading = ref(false)
 const saving = ref(false)
 
-const showAllowedSucursales = computed(() => form.value.roles.includes('admin') && !form.value.roles.includes('super_admin'))
-
-const fetchSucursales = async () => {
+const fetchCompanies = async () => {
   try {
-    const res = await $api<{ data: typeof sucursales.value }>('/catalogs/sucursales')
-    sucursales.value = res.data
+    const res = await $api<{ data: typeof companies.value }>('/admin/companies')
+    companies.value = res.data
   } catch {
-    sucursales.value = []
+    companies.value = []
   }
 }
 
@@ -88,8 +85,7 @@ const handleSubmit = async () => {
         email: form.value.email,
         password: form.value.password,
         password_confirmation: form.value.password_confirmation,
-        sucursal_id: form.value.sucursal_id || undefined,
-        allowed_sucursal_ids: form.value.allowed_sucursal_ids,
+        company_id: form.value.company_id || undefined,
         roles: form.value.roles,
       },
     })
@@ -106,7 +102,7 @@ const handleSubmit = async () => {
 }
 
 onMounted(() => {
-  Promise.all([fetchRoles(), fetchSucursales()])
+  Promise.all([fetchRoles(), fetchCompanies()])
 })
 </script>
 
@@ -159,17 +155,20 @@ onMounted(() => {
             </div>
 
             <div>
-              <Label for="sucursal">Sucursal (pertenencia)</Label>
-              <Select v-model="form.sucursal_id">
-                <SelectTrigger id="sucursal">
-                  <SelectValue placeholder="Seleccionar sucursal" />
+              <Label for="company">Empresa</Label>
+              <Select v-model="form.company_id">
+                <SelectTrigger id="company">
+                  <SelectValue placeholder="Seleccionar empresa" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem v-for="s in sucursales" :key="s.id" :value="s.id">
-                    {{ s.name }}{{ s.is_main ? ' (Principal)' : '' }}
+                  <SelectItem v-for="c in companies" :key="c.id" :value="c.id">
+                    {{ c.name }}
                   </SelectItem>
                 </SelectContent>
               </Select>
+              <p class="text-xs text-muted-foreground mt-1">
+                Asigna al usuario a una empresa (requerido para company_admin)
+              </p>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -191,36 +190,6 @@ onMounted(() => {
                   required
                   placeholder="Repite la contraseña"
                 />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card v-if="showAllowedSucursales">
-          <CardHeader>
-            <CardTitle>Sucursales permitidas (admin)</CardTitle>
-            <CardDescription>
-              Sucursales que este admin puede ver y gestionar
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div class="space-y-2">
-              <div
-                v-for="s in sucursales"
-                :key="s.id"
-                class="flex items-center space-x-2"
-              >
-                <Checkbox
-                  :id="`suc-${s.id}`"
-                  :checked="form.allowed_sucursal_ids.includes(s.id)"
-                  @update:checked="(checked: boolean) => {
-                    if (checked) form.allowed_sucursal_ids.push(s.id)
-                    else form.allowed_sucursal_ids = form.allowed_sucursal_ids.filter(id => id !== s.id)
-                  }"
-                />
-                <Label :for="`suc-${s.id}`" class="font-normal cursor-pointer">
-                  {{ s.name }}{{ s.is_main ? ' (Principal)' : '' }}
-                </Label>
               </div>
             </div>
           </CardContent>
