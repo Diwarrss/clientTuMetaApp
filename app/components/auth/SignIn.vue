@@ -23,8 +23,9 @@ async function onSubmit(event: Event) {
       email: email.value,
       password: password.value
     })
-    // Redirect to home (admin dashboard)
-    await navigateTo('/')
+    const route = useRoute()
+    const redirect = route.query.redirect as string
+    await navigateTo(redirect && redirect.startsWith('/') ? redirect : '/dashboard')
   } catch (e: any) {
     // Laravel ValidationException comes as { errors: { field: [msg] } }
     const firstFieldError =

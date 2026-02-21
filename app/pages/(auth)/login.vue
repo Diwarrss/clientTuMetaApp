@@ -6,12 +6,14 @@ definePageMeta({
 const { user, fetchUser } = useAuth()
 
 // Check if user is already logged in
+const route = useRoute()
+
 onMounted(async () => {
   try {
     await fetchUser()
     if (user.value) {
-      // User is already logged in, redirect to home
-      await navigateTo('/')
+      const redirect = route.query.redirect as string
+      await navigateTo(redirect && redirect.startsWith('/') ? redirect : '/dashboard')
     }
   } catch {
     // User is not logged in, stay on login page

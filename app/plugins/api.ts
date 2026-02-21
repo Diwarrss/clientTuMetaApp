@@ -12,7 +12,12 @@ export default defineNuxtPlugin(() => {
       'Content-Type': 'application/json'
     },
     async onRequest({ request, options }) {
-      // Get CSRF token before making requests
+      // For FormData, let browser set Content-Type with boundary
+      if (options.body instanceof FormData) {
+        const headers = { ...options.headers } as Record<string, string>
+        delete headers['Content-Type']
+        options.headers = headers
+      }
       const csrfToken = await getCsrfToken(apiBase)
       if (csrfToken) {
         options.headers = {
