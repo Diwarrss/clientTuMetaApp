@@ -32,13 +32,24 @@ const isSuperAdmin = computed(() => user.value?.roles?.includes('super_admin') ?
 
 const heroImageFile = ref<File | null>(null)
 const heroImagePreview = ref<string | null>(null)
+const premiacionImageFile = ref<File | null>(null)
+const tallaCamisaImageFile = ref<File | null>(null)
+const cronogramaImageFile = ref<File | null>(null)
 
 const form = ref({
   company_id: null as number | null,
   name: '',
   description: '',
+  kit_includes: '',
   event_date: '',
   event_time: '07:00',
+  event_end_date: '' as string | null,
+  event_end_time: '07:00' as string | null,
+  inscription_deadline: '' as string | null,
+  timezone: 'America/Bogota',
+  location_city: '',
+  location_region: '',
+  location_country: 'Colombia',
   bank_name: '',
   bank_account: '',
   precio_base: 0,
@@ -53,6 +64,10 @@ function onHeroImageChange(e: Event) {
   const file = target.files?.[0]
   heroImageFile.value = file || null
   heroImagePreview.value = file ? URL.createObjectURL(file) : null
+}
+function onImageChange(e: Event, ref: { value: File | null }) {
+  const target = e.target as HTMLInputElement
+  ref.value = target.files?.[0] || null
 }
 
 const fetchCompanies = async () => {
@@ -84,6 +99,16 @@ function buildEventDate(): string {
   const [hh, mm] = (form.value.event_time || '07:00').split(':')
   return `${y}-${m}-${d}T${hh}:${mm}:00`
 }
+function buildEventEndDate(): string | null {
+  if (!form.value.event_end_date) return null
+  const [y, m, d] = form.value.event_end_date.split('-')
+  const [hh, mm] = (form.value.event_end_time || '07:00').split(':')
+  return `${y}-${m}-${d}T${hh}:${mm}:00`
+}
+function buildInscriptionDeadline(): string | null {
+  if (!form.value.inscription_deadline) return null
+  return form.value.inscription_deadline + 'T23:59:59'
+}
 
 const handleSubmit = async () => {
   if (!form.value.name.trim()) {
@@ -106,30 +131,41 @@ const handleSubmit = async () => {
 
   saving.value = true
   try {
-    const payload = {
+    const payload: Record<string, unknown> = {
       company_id: form.value.company_id,
       name: form.value.name.trim(),
       description: form.value.description.trim() || null,
+      kit_includes: form.value.kit_includes.trim() || null,
       event_date: buildEventDate(),
+      event_end_date: buildEventEndDate(),
+      inscription_deadline: buildInscriptionDeadline(),
+      timezone: form.value.timezone || 'America/Bogota',
+      location_city: form.value.location_city.trim() || null,
+      location_region: form.value.location_region.trim() || null,
+      location_country: form.value.location_country.trim() || null,
       bank_name: form.value.bank_name.trim() || null,
       bank_account: form.value.bank_account.trim() || null,
       precio_base: Number(form.value.precio_base) || 0,
       status: form.value.status,
-        categories: validCats.map(c => ({
+      categories: validCats.map(c => ({
           name: c.name.trim(),
           edad_min: c.edad_min ?? null,
           edad_max: c.edad_max ?? null,
           precio: Number(c.precio) || 0,
         })),
     }
-    if (heroImageFile.value) {
+    const hasFiles = heroImageFile.value || premiacionImageFile.value || tallaCamisaImageFile.value || cronogramaImageFile.value
+    if (hasFiles) {
       const fd = new FormData()
       Object.entries(payload).forEach(([k, v]) => {
         if (v !== null && v !== undefined) {
           fd.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v))
         }
       })
-      fd.append('hero_image', heroImageFile.value)
+      if (heroImageFile.value) fd.append('hero_image', heroImageFile.value)
+      if (premiacionImageFile.value) fd.append('premiacion_image', premiacionImageFile.value)
+      if (tallaCamisaImageFile.value) fd.append('talla_camisa_image', tallaCamisaImageFile.value)
+      if (cronogramaImageFile.value) fd.append('cronograma_image', cronogramaImageFile.value)
       await $api('/admin/events', { method: 'POST', body: fd })
     }
     else {
@@ -236,9 +272,20 @@ onMounted(() => {
               />
             </div>
 
+            <div class="grid gap-2">
+              <Label for="kit_includes">El KIT incluye</Label>
+              <textarea
+                id="kit_includes"
+                v-model="form.kit_includes"
+                rows="2"
+                class="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Ej: Camiseta Oficial, Medalla Finisher, Hidratación, Chip, Póliza de seguro"
+              />
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="grid gap-2">
-                <Label for="event_date">Fecha *</Label>
+                <Label for="event_date">Fecha inicio *</Label>
                 <Input
                   id="event_date"
                   v-model="form.event_date"
@@ -247,12 +294,62 @@ onMounted(() => {
                 />
               </div>
               <div class="grid gap-2">
-                <Label for="event_time">Hora</Label>
+                <Label for="event_time">Hora inicio</Label>
                 <Input
                   id="event_time"
                   v-model="form.event_time"
                   type="time"
                 />
+              </div>
+              <div class="grid gap-2">
+                <Label for="event_end_date">Fecha fin (opcional)</Label>
+                <Input
+                  id="event_end_date"
+                  v-model="form.event_end_date"
+                  type="date"
+                />
+              </div>
+              <div class="grid gap-2">
+                <Label for="event_end_time">Hora fin</Label>
+                <Input
+                  id="event_end_time"
+                  v-model="form.event_end_time"
+                  type="time"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid gap-2">
+                <Label for="inscription_deadline">Fecha límite inscripción (opcional)</Label>
+                <Input
+                  id="inscription_deadline"
+                  v-model="form.inscription_deadline"
+                  type="date"
+                />
+              </div>
+              <div class="grid gap-2">
+                <Label for="timezone">Zona horaria</Label>
+                <Input
+                  id="timezone"
+                  v-model="form.timezone"
+                  placeholder="America/Bogota"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="grid gap-2">
+                <Label for="location_city">Ciudad</Label>
+                <Input id="location_city" v-model="form.location_city" placeholder="Ej: San Gil" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="location_region">Departamento/Región</Label>
+                <Input id="location_region" v-model="form.location_region" placeholder="Ej: Santander" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="location_country">País</Label>
+                <Input id="location_country" v-model="form.location_country" placeholder="Colombia" />
               </div>
             </div>
 
@@ -302,6 +399,43 @@ onMounted(() => {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Imágenes adicionales</CardTitle>
+            <CardDescription>
+              Cuadro de premiación, tabla de tallas, cronograma. Opcionales.
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="grid gap-2">
+                <Label>Cuadro de premiación</Label>
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  @change="(e: Event) => onImageChange(e, premiacionImageFile)"
+                />
+              </div>
+              <div class="grid gap-2">
+                <Label>Tabla medidas camisetas</Label>
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  @change="(e: Event) => onImageChange(e, tallaCamisaImageFile)"
+                />
+              </div>
+              <div class="grid gap-2">
+                <Label>Cronograma inscripciones</Label>
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  @change="(e: Event) => onImageChange(e, cronogramaImageFile)"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

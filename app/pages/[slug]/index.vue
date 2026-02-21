@@ -15,11 +15,30 @@ const { data: eventData, error, pending } = await useFetch<{
     name: string
     slug: string
     description: string | null
+    kit_includes: string | null
     event_date: string
+    event_end_date: string | null
+    inscription_deadline: string | null
+    timezone: string
+    location_city: string | null
+    location_region: string | null
+    location_country: string | null
     bank_name: string | null
     bank_account: string | null
     precio_base: number
     hero_image_url: string | null
+    premiacion_image_url: string | null
+    talla_camisa_image_url: string | null
+    cronograma_image_url: string | null
+    company: {
+      id: number
+      name: string
+      slug: string
+      website_url: string | null
+      facebook_url: string | null
+      instagram_url: string | null
+      twitter_url: string | null
+    } | null
     categories: Array<{
       id: number
       name: string
@@ -77,6 +96,78 @@ const event = computed(() => eventData.value?.data ?? null)
           </p>
         </div>
 
+        <!-- Información clave -->
+        <div v-if="event.event_date || event.location_city" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+          <div v-if="event.event_date" class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none">
+            <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
+              <Icon name="i-lucide-calendar" class="size-5" />
+              <span class="font-semibold">Fecha</span>
+            </div>
+            <p class="text-slate-600 dark:text-slate-300">
+              Inicio: {{ new Date(event.event_date).toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+            </p>
+            <p v-if="event.event_end_date" class="text-slate-600 dark:text-slate-300 mt-1">
+              Fin: {{ new Date(event.event_end_date).toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+            </p>
+            <p v-else-if="event.event_date" class="text-slate-600 dark:text-slate-300 mt-1">
+              Fin: {{ new Date(event.event_date).toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+            </p>
+            <p class="text-sm text-muted-foreground mt-2">{{ event.timezone || 'America/Bogota' }}</p>
+          </div>
+          <div v-if="event.location_city || event.location_region || event.location_country" class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none">
+            <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
+              <Icon name="i-lucide-map-pin" class="size-5" />
+              <span class="font-semibold">Ubicación</span>
+            </div>
+            <p v-if="event.location_city" class="text-slate-600 dark:text-slate-300">{{ event.location_city }}</p>
+            <p v-if="event.location_region" class="text-slate-600 dark:text-slate-300">{{ event.location_city ? `${event.location_city}, ${event.location_region}` : event.location_region }}</p>
+            <p v-if="event.location_country" class="text-slate-600 dark:text-slate-300">{{ event.location_country }}</p>
+          </div>
+        </div>
+
+        <div v-if="event.inscription_deadline" class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 mb-12 text-amber-200 text-sm">
+          Inscripciones hasta: {{ new Date(event.inscription_deadline).toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}
+        </div>
+
+        <div v-if="event.kit_includes" class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 mb-12 shadow-sm dark:shadow-none">
+          <h3 class="font-semibold mb-2 flex items-center gap-2 text-slate-900 dark:text-white">
+            <Icon name="i-lucide-package" class="size-4" />
+            El KIT incluye
+          </h3>
+          <p class="text-slate-600 dark:text-slate-300">{{ event.kit_includes }}</p>
+        </div>
+
+        <div v-if="event.premiacion_image_url || event.talla_camisa_image_url || event.cronograma_image_url" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+          <div v-if="event.premiacion_image_url" class="rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden bg-white dark:bg-white/5">
+            <p class="font-semibold p-3 text-slate-900 dark:text-white">Cuadro de premiación</p>
+            <img :src="event.premiacion_image_url" alt="Premiación" class="w-full object-contain max-h-64">
+          </div>
+          <div v-if="event.talla_camisa_image_url" class="rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden bg-white dark:bg-white/5">
+            <p class="font-semibold p-3 text-slate-900 dark:text-white">Tabla medidas camisetas</p>
+            <img :src="event.talla_camisa_image_url" alt="Tallas" class="w-full object-contain max-h-64">
+          </div>
+          <div v-if="event.cronograma_image_url" class="rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden bg-white dark:bg-white/5">
+            <p class="font-semibold p-3 text-slate-900 dark:text-white">Cronograma inscripciones</p>
+            <img :src="event.cronograma_image_url" alt="Cronograma" class="w-full object-contain max-h-64">
+          </div>
+        </div>
+
+        <div v-if="event.company && (event.company.website_url || event.company.facebook_url || event.company.instagram_url || event.company.twitter_url)" class="flex flex-wrap gap-4 mb-12">
+          <span class="text-sm text-muted-foreground">Organizador:</span>
+          <a v-if="event.company.website_url" :href="event.company.website_url" target="_blank" rel="noopener" class="text-emerald-500 hover:underline flex items-center gap-1">
+            <Icon name="i-lucide-globe" class="size-4" /> Web
+          </a>
+          <a v-if="event.company.facebook_url" :href="event.company.facebook_url" target="_blank" rel="noopener" class="text-emerald-500 hover:underline flex items-center gap-1">
+            <Icon name="i-lucide-facebook" class="size-4" /> Facebook
+          </a>
+          <a v-if="event.company.instagram_url" :href="event.company.instagram_url" target="_blank" rel="noopener" class="text-emerald-500 hover:underline flex items-center gap-1">
+            <Icon name="i-lucide-instagram" class="size-4" /> Instagram
+          </a>
+          <a v-if="event.company.twitter_url" :href="event.company.twitter_url" target="_blank" rel="noopener" class="text-emerald-500 hover:underline flex items-center gap-1">
+            <Icon name="i-lucide-twitter" class="size-4" /> Twitter
+          </a>
+        </div>
+
         <div v-if="event.bank_name || event.bank_account" class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 mb-12 shadow-sm dark:shadow-none">
           <h3 class="font-semibold mb-2 flex items-center gap-2 text-slate-900 dark:text-white">
             <Icon name="i-lucide-credit-card" class="size-4" />
@@ -95,6 +186,7 @@ const event = computed(() => eventData.value?.data ?? null)
             :event-id="event.id"
             :categories="event.categories"
             :precio-base="event.precio_base"
+            :inscription-deadline="event.inscription_deadline"
           />
         </div>
       </template>

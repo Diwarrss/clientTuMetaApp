@@ -34,6 +34,15 @@ const currentHeroImageUrl = ref<string | null>(null)
 const heroImageFile = ref<File | null>(null)
 const heroImagePreview = ref<string | null>(null)
 const removeHeroImage = ref(false)
+const premiacionImageUrl = ref<string | null>(null)
+const premiacionImageFile = ref<File | null>(null)
+const removePremiacionImage = ref(false)
+const tallaCamisaImageUrl = ref<string | null>(null)
+const tallaCamisaImageFile = ref<File | null>(null)
+const removeTallaCamisaImage = ref(false)
+const cronogramaImageUrl = ref<string | null>(null)
+const cronogramaImageFile = ref<File | null>(null)
+const removeCronogramaImage = ref(false)
 
 const isSuperAdmin = computed(() => user.value?.roles?.includes('super_admin') ?? false)
 
@@ -41,8 +50,16 @@ const form = ref({
   company_id: null as number | null,
   name: '',
   description: '',
+  kit_includes: '',
   event_date: '',
   event_time: '07:00',
+  event_end_date: '' as string | null,
+  event_end_time: '07:00' as string | null,
+  inscription_deadline: '' as string | null,
+  timezone: 'America/Bogota',
+  location_city: '',
+  location_region: '',
+  location_country: 'Colombia',
   bank_name: '',
   bank_account: '',
   precio_base: 0,
@@ -59,24 +76,47 @@ const fetchEvent = async () => {
         company_id: number
         name: string
         description: string | null
+        kit_includes: string | null
         event_date: string
+        event_end_date: string | null
+        inscription_deadline: string | null
+        timezone: string
+        location_city: string | null
+        location_region: string | null
+        location_country: string | null
         bank_name: string | null
         bank_account: string | null
         precio_base: number
         status: string
         hero_image_url: string | null
+        premiacion_image_url: string | null
+        talla_camisa_image_url: string | null
+        cronograma_image_url: string | null
         categories: Array<{ id: number; name: string; edad_min: number | null; edad_max: number | null; precio: number }>
       }
     }>(`/admin/events/${eventId.value}`)
     const d = res.data
     currentHeroImageUrl.value = d.hero_image_url ?? null
+    premiacionImageUrl.value = d.premiacion_image_url ?? null
+    tallaCamisaImageUrl.value = d.talla_camisa_image_url ?? null
+    cronogramaImageUrl.value = d.cronograma_image_url ?? null
     const dt = new Date(d.event_date)
+    const dtEnd = d.event_end_date ? new Date(d.event_end_date) : null
+    const dtInsc = d.inscription_deadline ? new Date(d.inscription_deadline) : null
     form.value = {
       company_id: d.company_id,
       name: d.name,
       description: d.description || '',
+      kit_includes: d.kit_includes || '',
       event_date: dt.toISOString().slice(0, 10),
       event_time: dt.toTimeString().slice(0, 5),
+      event_end_date: dtEnd ? dtEnd.toISOString().slice(0, 10) : null,
+      event_end_time: dtEnd ? dtEnd.toTimeString().slice(0, 5) : '07:00',
+      inscription_deadline: dtInsc ? dtInsc.toISOString().slice(0, 10) : null,
+      timezone: d.timezone || 'America/Bogota',
+      location_city: d.location_city || '',
+      location_region: d.location_region || '',
+      location_country: d.location_country || 'Colombia',
       bank_name: d.bank_name || '',
       bank_account: d.bank_account || '',
       precio_base: d.precio_base,
@@ -126,12 +166,37 @@ function onHeroImageChange(e: Event) {
   heroImagePreview.value = file ? URL.createObjectURL(file) : null
   if (file) removeHeroImage.value = false
 }
+function onPremiacionChange(e: Event) {
+  const t = (e.target as HTMLInputElement)
+  premiacionImageFile.value = t.files?.[0] || null
+  if (premiacionImageFile.value) removePremiacionImage.value = false
+}
+function onTallaCamisaChange(e: Event) {
+  const t = (e.target as HTMLInputElement)
+  tallaCamisaImageFile.value = t.files?.[0] || null
+  if (tallaCamisaImageFile.value) removeTallaCamisaImage.value = false
+}
+function onCronogramaChange(e: Event) {
+  const t = (e.target as HTMLInputElement)
+  cronogramaImageFile.value = t.files?.[0] || null
+  if (cronogramaImageFile.value) removeCronogramaImage.value = false
+}
 
 function buildEventDate(): string {
   if (!form.value.event_date) return ''
   const [y, m, d] = form.value.event_date.split('-')
   const [hh, mm] = (form.value.event_time || '07:00').split(':')
   return `${y}-${m}-${d}T${hh}:${mm}:00`
+}
+function buildEventEndDate(): string | null {
+  if (!form.value.event_end_date) return null
+  const [y, m, d] = form.value.event_end_date.split('-')
+  const [hh, mm] = (form.value.event_end_time || '07:00').split(':')
+  return `${y}-${m}-${d}T${hh}:${mm}:00`
+}
+function buildInscriptionDeadline(): string | null {
+  if (!form.value.inscription_deadline) return null
+  return form.value.inscription_deadline + 'T23:59:59'
 }
 
 const handleSubmit = async () => {
@@ -151,11 +216,19 @@ const handleSubmit = async () => {
 
   saving.value = true
   try {
-    const useFormData = heroImageFile.value || removeHeroImage.value
+    const useFormData = heroImageFile.value || removeHeroImage.value || premiacionImageFile.value || removePremiacionImage.value ||
+      tallaCamisaImageFile.value || removeTallaCamisaImage.value || cronogramaImageFile.value || removeCronogramaImage.value
     const body: Record<string, unknown> = {
       name: form.value.name.trim(),
       description: form.value.description.trim() || null,
+      kit_includes: form.value.kit_includes.trim() || null,
       event_date: buildEventDate(),
+      event_end_date: buildEventEndDate(),
+      inscription_deadline: buildInscriptionDeadline(),
+      timezone: form.value.timezone || 'America/Bogota',
+      location_city: form.value.location_city.trim() || null,
+      location_region: form.value.location_region.trim() || null,
+      location_country: form.value.location_country.trim() || null,
       bank_name: form.value.bank_name.trim() || null,
       bank_account: form.value.bank_account.trim() || null,
       precio_base: Number(form.value.precio_base) || 0,
@@ -180,6 +253,12 @@ const handleSubmit = async () => {
       })
       if (removeHeroImage.value) fd.append('remove_hero_image', '1')
       if (heroImageFile.value) fd.append('hero_image', heroImageFile.value)
+      if (removePremiacionImage.value) fd.append('remove_premiacion_image', '1')
+      if (premiacionImageFile.value) fd.append('premiacion_image', premiacionImageFile.value)
+      if (removeTallaCamisaImage.value) fd.append('remove_talla_camisa_image', '1')
+      if (tallaCamisaImageFile.value) fd.append('talla_camisa_image', tallaCamisaImageFile.value)
+      if (removeCronogramaImage.value) fd.append('remove_cronograma_image', '1')
+      if (cronogramaImageFile.value) fd.append('cronograma_image', cronogramaImageFile.value)
       await $api(`/admin/events/${eventId.value}`, { method: 'PUT', body: fd })
     }
     else {
@@ -294,9 +373,20 @@ onMounted(() => {
               />
             </div>
 
+            <div class="grid gap-2">
+              <Label for="kit_includes">El KIT incluye</Label>
+              <textarea
+                id="kit_includes"
+                v-model="form.kit_includes"
+                rows="2"
+                class="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Ej: Camiseta Oficial, Medalla Finisher, Hidratación"
+              />
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="grid gap-2">
-                <Label for="event_date">Fecha *</Label>
+                <Label for="event_date">Fecha inicio *</Label>
                 <Input
                   id="event_date"
                   v-model="form.event_date"
@@ -305,12 +395,58 @@ onMounted(() => {
                 />
               </div>
               <div class="grid gap-2">
-                <Label for="event_time">Hora</Label>
+                <Label for="event_time">Hora inicio</Label>
                 <Input
                   id="event_time"
                   v-model="form.event_time"
                   type="time"
                 />
+              </div>
+              <div class="grid gap-2">
+                <Label for="event_end_date">Fecha fin (opcional)</Label>
+                <Input
+                  id="event_end_date"
+                  v-model="form.event_end_date"
+                  type="date"
+                />
+              </div>
+              <div class="grid gap-2">
+                <Label for="event_end_time">Hora fin</Label>
+                <Input
+                  id="event_end_time"
+                  v-model="form.event_end_time"
+                  type="time"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid gap-2">
+                <Label for="inscription_deadline">Fecha límite inscripción (opcional)</Label>
+                <Input
+                  id="inscription_deadline"
+                  v-model="form.inscription_deadline"
+                  type="date"
+                />
+              </div>
+              <div class="grid gap-2">
+                <Label for="timezone">Zona horaria</Label>
+                <Input id="timezone" v-model="form.timezone" placeholder="America/Bogota" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="grid gap-2">
+                <Label for="location_city">Ciudad</Label>
+                <Input id="location_city" v-model="form.location_city" placeholder="Ej: San Gil" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="location_region">Departamento/Región</Label>
+                <Input id="location_region" v-model="form.location_region" placeholder="Ej: Santander" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="location_country">País</Label>
+                <Input id="location_country" v-model="form.location_country" placeholder="Colombia" />
               </div>
             </div>
 
@@ -351,6 +487,52 @@ onMounted(() => {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Imágenes adicionales</CardTitle>
+            <CardDescription>
+              Cuadro de premiación, tabla de tallas, cronograma
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="grid gap-2">
+                <Label>Cuadro de premiación</Label>
+                <div v-if="premiacionImageUrl && !removePremiacionImage" class="rounded border overflow-hidden max-w-[200px]">
+                  <img :src="premiacionImageUrl" alt="Premiación" class="w-full">
+                </div>
+                <Input type="file" accept="image/jpeg,image/png,image/webp" @change="onPremiacionChange" />
+                <label v-if="premiacionImageUrl" class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input v-model="removePremiacionImage" type="checkbox" class="rounded border-input">
+                  Quitar
+                </label>
+              </div>
+              <div class="grid gap-2">
+                <Label>Tabla medidas camisetas</Label>
+                <div v-if="tallaCamisaImageUrl && !removeTallaCamisaImage" class="rounded border overflow-hidden max-w-[200px]">
+                  <img :src="tallaCamisaImageUrl" alt="Tallas" class="w-full">
+                </div>
+                <Input type="file" accept="image/jpeg,image/png,image/webp" @change="onTallaCamisaChange" />
+                <label v-if="tallaCamisaImageUrl" class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input v-model="removeTallaCamisaImage" type="checkbox" class="rounded border-input">
+                  Quitar
+                </label>
+              </div>
+              <div class="grid gap-2">
+                <Label>Cronograma inscripciones</Label>
+                <div v-if="cronogramaImageUrl && !removeCronogramaImage" class="rounded border overflow-hidden max-w-[200px]">
+                  <img :src="cronogramaImageUrl" alt="Cronograma" class="w-full">
+                </div>
+                <Input type="file" accept="image/jpeg,image/png,image/webp" @change="onCronogramaChange" />
+                <label v-if="cronogramaImageUrl" class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input v-model="removeCronogramaImage" type="checkbox" class="rounded border-input">
+                  Quitar
+                </label>
+              </div>
             </div>
           </CardContent>
         </Card>

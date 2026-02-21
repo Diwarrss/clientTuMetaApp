@@ -16,7 +16,13 @@ const props = defineProps<{
   eventId: number
   categories: Category[]
   precioBase?: number
+  inscriptionDeadline?: string | null
 }>()
+
+const inscriptionClosed = computed(() => {
+  if (!props.inscriptionDeadline) return false
+  return new Date(props.inscriptionDeadline) < new Date()
+})
 
 const TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
 
@@ -139,7 +145,12 @@ const onSubmit = handleSubmit(async (values) => {
 
 <template>
   <div class="space-y-6">
-    <div v-if="!user" class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+    <div v-if="inscriptionClosed" class="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+      <p class="text-sm text-red-200">
+        El plazo de inscripción ha vencido.
+      </p>
+    </div>
+    <div v-else-if="!user" class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
       <p class="text-sm text-amber-200 mb-3">
         Debes iniciar sesión para inscribirte. Si no tienes cuenta, regístrate primero.
       </p>

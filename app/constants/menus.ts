@@ -26,6 +26,12 @@ export const navMenu: NavMenu[] = [
         link: '/admin/registrations',
         permission: 'manage_registrations',
       },
+      {
+        title: 'Mi empresa',
+        icon: 'i-lucide-building-2',
+        link: '/admin/company',
+        permission: 'events.view',
+      },
     ],
   },
   {
