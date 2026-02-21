@@ -25,6 +25,7 @@ const { data: eventData, error, pending } = await useFetch<{
       name: string
       edad_min: number | null
       edad_max: number | null
+      precio: number
     }>
   }
 }>(
@@ -36,35 +37,19 @@ const event = computed(() => eventData.value?.data ?? null)
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
-    <header class="border-b border-white/10 bg-slate-950/80 backdrop-blur-md">
-      <div class="container mx-auto flex h-16 items-center justify-between px-4">
-        <NuxtLink to="/" class="flex items-center gap-1.5 font-bold text-xl">
-          <span>Tu</span>
-          <span class="text-emerald-400">Meta</span>
-          <span class="text-slate-500 text-sm font-normal">.app</span>
-        </NuxtLink>
-        <nav class="flex items-center gap-4">
-          <NuxtLink to="/" class="text-sm text-slate-400 hover:text-white">
-            Inicio
-          </NuxtLink>
-          <NuxtLink to="/login" class="text-sm text-slate-400 hover:text-white">
-            Iniciar sesión
-          </NuxtLink>
-        </nav>
-      </div>
-    </header>
+  <div class="min-h-screen bg-slate-100 text-slate-900 dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white transition-colors">
+    <LandingHeader show-inicio />
 
-    <main class="container mx-auto px-4 py-12 max-w-4xl">
+    <main class="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
       <div v-if="pending" class="flex justify-center py-20">
         <Icon name="i-lucide-loader-2" class="size-12 animate-spin text-emerald-400" />
       </div>
 
       <div v-else-if="error || !event" class="text-center py-20">
         <Icon name="i-lucide-alert-circle" class="size-16 text-amber-500 mx-auto mb-4" />
-        <h2 class="text-xl font-semibold mb-2">Evento no encontrado</h2>
-        <p class="text-slate-400 mb-6">Este evento no existe o no está disponible.</p>
-        <NuxtLink to="/" class="text-emerald-400 hover:underline">
+        <h2 class="text-xl font-semibold mb-2 text-slate-900 dark:text-white">Evento no encontrado</h2>
+        <p class="text-slate-600 dark:text-slate-400 mb-6">Este evento no existe o no está disponible.</p>
+        <NuxtLink to="/" class="text-emerald-600 dark:text-emerald-400 hover:underline">
           Volver al inicio
         </NuxtLink>
       </div>
@@ -87,25 +72,25 @@ const event = computed(() => eventData.value?.data ?? null)
         </div>
 
         <div class="mb-12">
-          <p v-if="event.description" class="text-slate-300 whitespace-pre-wrap">
+          <p v-if="event.description" class="text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
             {{ event.description }}
           </p>
         </div>
 
-        <div v-if="event.bank_name || event.bank_account" class="rounded-xl border border-white/10 bg-white/5 p-6 mb-12">
-          <h3 class="font-semibold mb-2 flex items-center gap-2">
+        <div v-if="event.bank_name || event.bank_account" class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 mb-12 shadow-sm dark:shadow-none">
+          <h3 class="font-semibold mb-2 flex items-center gap-2 text-slate-900 dark:text-white">
             <Icon name="i-lucide-credit-card" class="size-4" />
             Información de pago
           </h3>
-          <p v-if="event.bank_name" class="text-slate-300">Banco: {{ event.bank_name }}</p>
-          <p v-if="event.bank_account" class="text-slate-300">Cuenta: {{ event.bank_account }}</p>
-          <p class="text-emerald-400 font-semibold mt-2">
-            Valor: ${{ event.precio_base.toLocaleString('es-CO') }}
+          <p v-if="event.bank_name" class="text-slate-600 dark:text-slate-300">Banco: {{ event.bank_name }}</p>
+          <p v-if="event.bank_account" class="text-slate-600 dark:text-slate-300">Cuenta: {{ event.bank_account }}</p>
+          <p class="text-slate-600 dark:text-slate-300 mt-2">
+            Valor según categoría (verás el precio al seleccionar fecha de nacimiento en el formulario)
           </p>
         </div>
 
-        <div class="rounded-xl border border-white/10 bg-white/5 p-6">
-          <h2 class="text-xl font-semibold mb-6">Inscripción</h2>
+        <div class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none">
+          <h2 class="text-xl font-semibold mb-6 text-slate-900 dark:text-white">Inscripción</h2>
           <RegistrationForm
             :event-id="event.id"
             :categories="event.categories"

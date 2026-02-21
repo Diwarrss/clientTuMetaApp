@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import * as z from 'zod'
@@ -8,12 +9,13 @@ interface Category {
   name: string
   edad_min: number | null
   edad_max: number | null
+  precio: number
 }
 
 const props = defineProps<{
   eventId: number
   categories: Category[]
-  precioBase: number
+  precioBase?: number
 }>()
 
 const TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
@@ -51,7 +53,7 @@ const schema = z.object({
 
 type Schema = z.infer<typeof schema>
 
-const { handleSubmit, setFieldValue, watch, defineField } = useForm({
+const { handleSubmit, setFieldValue, defineField } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
     fecha_nacimiento: '',
@@ -176,6 +178,9 @@ const onSubmit = handleSubmit(async (values) => {
           <Label>Categoría asignada</Label>
           <p class="rounded-lg bg-white/5 px-3 py-2 text-sm text-slate-300">
             {{ categories.find(c => c.id === selectedCategoryId)?.name ?? 'Selecciona fecha de nacimiento' }}
+            <span v-if="selectedCategoryId" class="ml-2 font-semibold text-emerald-400">
+              ${{ (categories.find(c => c.id === selectedCategoryId)?.precio ?? props.precioBase ?? 0).toLocaleString('es-CO') }}
+            </span>
           </p>
         </div>
       </div>

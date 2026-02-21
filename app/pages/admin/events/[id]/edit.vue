@@ -18,6 +18,7 @@ interface CategoryInput {
   name: string
   edad_min: number | null
   edad_max: number | null
+  precio: number
 }
 
 const { $api } = useNuxtApp()
@@ -64,7 +65,7 @@ const fetchEvent = async () => {
         precio_base: number
         status: string
         hero_image_url: string | null
-        categories: Array<{ id: number; name: string; edad_min: number | null; edad_max: number | null }>
+        categories: Array<{ id: number; name: string; edad_min: number | null; edad_max: number | null; precio: number }>
       }
     }>(`/admin/events/${eventId.value}`)
     const d = res.data
@@ -85,6 +86,7 @@ const fetchEvent = async () => {
         name: c.name,
         edad_min: c.edad_min,
         edad_max: c.edad_max,
+        precio: c.precio ?? 0,
       })),
     }
   }
@@ -108,7 +110,7 @@ const fetchCompanies = async () => {
 }
 
 function addCategory() {
-  form.value.categories.push({ name: '', edad_min: null, edad_max: null })
+  form.value.categories.push({ name: '', edad_min: null, edad_max: null, precio: form.value.precio_base || 0 })
 }
 
 function removeCategory(index: number) {
@@ -163,6 +165,7 @@ const handleSubmit = async () => {
         name: c.name.trim(),
         edad_min: c.edad_min ?? null,
         edad_max: c.edad_max ?? null,
+        precio: Number(c.precio) || 0,
       })),
     }
     if (isSuperAdmin.value && form.value.company_id) {
@@ -358,7 +361,7 @@ onMounted(() => {
               <div>
                 <CardTitle>Categorías</CardTitle>
                 <CardDescription>
-                  Define categorías por edad
+                  Define categorías por edad y precio
                 </CardDescription>
               </div>
               <Button type="button" variant="outline" size="sm" @click="addCategory">
@@ -373,7 +376,7 @@ onMounted(() => {
               :key="i"
               class="flex gap-4 items-end"
             >
-              <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="grid gap-2">
                   <Label>Nombre</Label>
                   <Input v-model="cat.name" placeholder="Ej: Abierta" />
@@ -385,6 +388,10 @@ onMounted(() => {
                 <div class="grid gap-2">
                   <Label>Edad máx.</Label>
                   <Input v-model.number="cat.edad_max" type="number" min="0" max="120" placeholder="—" />
+                </div>
+                <div class="grid gap-2">
+                  <Label>Precio (COP)</Label>
+                  <Input v-model.number="cat.precio" type="number" min="0" step="1000" placeholder="45000" />
                 </div>
               </div>
               <Button

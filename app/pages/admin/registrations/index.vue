@@ -24,16 +24,17 @@ const registrations = ref<Registration[]>([])
 const meta = ref({ current_page: 1, last_page: 1, per_page: 15, total: 0 })
 const loading = ref(true)
 const search = ref('')
-const estadoFilter = ref('')
-const eventFilter = ref('')
+const ALL_VALUE = '__all__'
+const estadoFilter = ref(ALL_VALUE)
+const eventFilter = ref(ALL_VALUE)
 
 const fetchRegistrations = async () => {
   loading.value = true
   try {
     const params: Record<string, string> = {}
     if (search.value) params.search = search.value
-    if (estadoFilter.value) params.estado = estadoFilter.value
-    if (eventFilter.value) params.event_id = eventFilter.value
+    if (estadoFilter.value && estadoFilter.value !== ALL_VALUE) params.estado = estadoFilter.value
+    if (eventFilter.value && eventFilter.value !== ALL_VALUE) params.event_id = eventFilter.value
     params.page = String(meta.value.current_page)
     params.per_page = String(meta.value.per_page)
 
@@ -155,7 +156,7 @@ watch([search, estadoFilter, eventFilter], () => {
           <SelectValue placeholder="Estado" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">
+          <SelectItem :value="ALL_VALUE">
             Todos
           </SelectItem>
           <SelectItem value="pending">
@@ -174,7 +175,7 @@ watch([search, estadoFilter, eventFilter], () => {
           <SelectValue placeholder="Evento" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">
+          <SelectItem :value="ALL_VALUE">
             Todos
           </SelectItem>
           <SelectItem v-for="e in events" :key="e.id" :value="String(e.id)">
