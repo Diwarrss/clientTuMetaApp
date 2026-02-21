@@ -1,6 +1,6 @@
 # Solo para desarrollo local: levanta únicamente PostgreSQL.
 # La API y el cliente se ejecutan en tu máquina (php artisan serve, pnpm dev).
-# Uso: docker compose -f clientCooperative/docker-compose.dev.yml up -d
+# Uso: docker compose -f clientTuMetaApp/docker-compose.dev.yml up -d
 
 services:
   postgres:
@@ -8,8 +8,8 @@ services:
     container_name: cooperative_postgres_dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-cooperative}
-      POSTGRES_USER: ${DB_USERNAME:-cooperative}
+      POSTGRES_DB: ${DB_DATABASE:-tumetaapp}
+      POSTGRES_USER: ${DB_USERNAME:-tumetaapp}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data

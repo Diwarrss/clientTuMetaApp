@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Despliegue del cliente Nuxt en Docker.
-# Ejecutar desde la raíz del repo: /home/ubuntu/www/cooperative
-# Uso: ./clientCooperative/deploy.sh
+# Ejecutar desde la raíz del repo: /home/ubuntu/www/tumetaapp
+# Uso: ./clientTuMetaApp/deploy.sh
 #
 # Datos seguros: este script solo hace build + up -d. No borra volúmenes.
 # NUNCA uses: docker compose down -v  (la -v borraría BD y storage).
@@ -10,10 +10,10 @@ set -e
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
-echo "→ Build sin caché (context: clientCooperative/)..."
-sudo docker compose -f "$REPO_ROOT/clientCooperative/docker-compose.yml" build --no-cache client
+echo "→ Build sin caché (context: clientTuMetaApp/)..."
+sudo docker compose -f "$REPO_ROOT/clientTuMetaApp/docker-compose.yml" build --no-cache client
 
 echo "→ Recreando contenedor para usar la nueva imagen..."
-sudo docker compose -f "$REPO_ROOT/clientCooperative/docker-compose.yml" up -d client
+sudo docker compose -f "$REPO_ROOT/clientTuMetaApp/docker-compose.yml" up -d client
 
-echo "→ Listo. Ver logs: sudo docker compose -f $REPO_ROOT/clientCooperative/docker-compose.yml logs -f client"
+echo "→ Listo. Ver logs: sudo docker compose -f $REPO_ROOT/clientTuMetaApp/docker-compose.yml logs -f client"

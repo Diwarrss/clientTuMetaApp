@@ -6,15 +6,15 @@ Frontend SPA que consume la API Laravel. Autenticación stateful con Laravel San
 
 ## Stack
 
-| Capa | Tecnología |
-|------|------------|
-| Framework | Nuxt 4 |
-| UI | Shadcn-Vue (componentes en `~/components/ui`) |
-| Estilos | Tailwind CSS 4 |
-| Estado | Pinia + `useState` (Nuxt) |
-| Iconos | @nuxt/icon (lucide) |
-| Validación de formularios | VeeValidate + Zod |
-| Runtime | Node 22 (recomendado); pnpm como package manager |
+| Capa                      | Tecnología                                       |
+| ------------------------- | ------------------------------------------------ |
+| Framework                 | Nuxt 4                                           |
+| UI                        | Shadcn-Vue (componentes en `~/components/ui`)    |
+| Estilos                   | Tailwind CSS 4                                   |
+| Estado                    | Pinia + `useState` (Nuxt)                        |
+| Iconos                    | @nuxt/icon (lucide)                              |
+| Validación de formularios | VeeValidate + Zod                                |
+| Runtime                   | Node 22 (recomendado); pnpm como package manager |
 
 ---
 
@@ -67,7 +67,7 @@ app/
 - **Variable clave**: `NUXT_PUBLIC_API_BASE` (URL base de la API, usada en build y en runtime).
 - **Docker**: Build multi-stage (Node 22): stage de build con pnpm/npm y `nuxt build`, stage de producción con `.output` y `node .output/server/index.mjs` (puerto 3000).
 - **Orquestación**: El `docker-compose.yml` de este repo define los servicios (postgres, api, client). El client depende del servicio API y recibe `NUXT_PUBLIC_API_BASE` por variable de entorno.
-- **Despliegue**: Desde la raíz del monorepo, `./clientCooperative/deploy.sh` hace build del client y `up -d client` (no se usa `down -v` para no borrar volúmenes).
+- **Despliegue**: Desde la raíz del monorepo, `./clientTuMetaApp/deploy.sh` hace build del client y `up -d client` (no se usa `down -v` para no borrar volúmenes).
 
 ---
 
@@ -75,7 +75,7 @@ app/
 
 ```bash
 pnpm install   # o npm ci
-pnpm run dev   # Servidor de desarrollo (puerto en nuxt.config, ej. 3535)
+pnpm run dev   # Servidor de desarrollo (puerto en nuxt.config, ej. 3737)
 pnpm run build
 pnpm run preview
 ```

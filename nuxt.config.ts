@@ -1,47 +1,45 @@
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from "@tailwindcss/vite";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
 
-  css: ['~/assets/css/tailwind.css'],
+  css: ["~/assets/css/tailwind.css"],
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
+    plugins: [tailwindcss()],
   },
 
   components: [
     {
-      path: '~/components',
-      extensions: ['.vue'],
+      path: "~/components",
+      extensions: [".vue"],
     },
   ],
 
   modules: [
-    'shadcn-nuxt',
-    '@vueuse/nuxt',
-    '@nuxt/eslint',
-    '@nuxt/icon',
-    '@pinia/nuxt',
-    '@nuxtjs/color-mode',
+    "shadcn-nuxt",
+    "@vueuse/nuxt",
+    "@nuxt/eslint",
+    "@nuxt/icon",
+    "@pinia/nuxt",
+    "@nuxtjs/color-mode",
     // '@nuxtjs/i18n', // Temporalmente deshabilitado hasta resolver conflicto de versiones
-    '@nuxt/fonts',
+    "@nuxt/fonts",
   ],
 
   shadcn: {
     /**
      * Prefix for all the imported component
      */
-    prefix: '',
+    prefix: "",
     /**
      * Directory that the component lives in.
      * @default "~/components/ui"
      */
-    componentDir: '~/components/ui',
+    componentDir: "~/components/ui",
   },
 
   colorMode: {
-    classSuffix: '',
+    classSuffix: "",
   },
 
   eslint: {
@@ -57,27 +55,25 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/components': { redirect: '/components/accordion' },
-    '/settings': { redirect: '/settings/profile' },
+    "/components": { redirect: "/components/accordion" },
+    "/settings": { redirect: "/settings/profile" },
   },
 
   imports: {
-    dirs: [
-      './lib',
-    ],
+    dirs: ["./lib"],
   },
 
-  compatibilityDate: '2024-12-14',
+  compatibilityDate: "2024-12-14",
 
   devServer: {
-    port: 3535,
+    port: 3737,
   },
 
   runtimeConfig: {
     public: {
       // Laravel base URL (Sanctum SPA / cookies)
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8585'
-    }
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://localhost:8686",
+    },
   },
 
   // i18n: {
@@ -92,4 +88,4 @@ export default defineNuxtConfig({
   //     strictMessage: false,
   //   },
   // },
-})
+});

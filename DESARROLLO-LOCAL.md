@@ -6,10 +6,10 @@ En local corres la **API** y el **cliente** en tu máquina para tener recarga en
 
 ## Resumen rápido
 
-| Entorno | API | Cliente | Base de datos |
-|--------|-----|---------|----------------|
-| **Producción** (VPS) | Docker (imagen) | Docker (imagen) | Docker |
-| **Desarrollo** (local) | `php artisan serve` / `composer run dev` | `pnpm dev` | Docker (solo Postgres) o local |
+| Entorno                | API                                      | Cliente         | Base de datos                  |
+| ---------------------- | ---------------------------------------- | --------------- | ------------------------------ |
+| **Producción** (VPS)   | Docker (imagen)                          | Docker (imagen) | Docker                         |
+| **Desarrollo** (local) | `php artisan serve` / `composer run dev` | `pnpm dev`      | Docker (solo Postgres) o local |
 
 ---
 
@@ -25,58 +25,58 @@ En local corres la **API** y el **cliente** en tu máquina para tener recarga en
 
 ### Opción A: Postgres en Docker (recomendado)
 
-Desde la carpeta raíz del proyecto (donde están `apiCooperative/` y `clientCooperative/`):
+Desde la carpeta raíz del proyecto (donde están `apiTuMetaApp/` y `clientTuMetaApp/`):
 
 ```bash
-docker compose -f clientCooperative/docker-compose.dev.yml up -d
+docker compose -f clientTuMetaApp/docker-compose.dev.yml up -d
 ```
 
-Eso levanta solo PostgreSQL en el puerto **5435**. Credenciales desde el `.env` de la raíz (o por defecto: usuario `cooperative`, contraseña `secret`, BD `cooperative`).
+Eso levanta solo PostgreSQL en el puerto **5435**. Credenciales desde el `.env` de la raíz (o por defecto: usuario `tumetaapp`, contraseña `secret`, BD `tumetaapp`).
 
 Para parar:
 
 ```bash
-docker compose -f clientCooperative/docker-compose.dev.yml down
+docker compose -f clientTuMetaApp/docker-compose.dev.yml down
 ```
 
 ### Opción B: Postgres instalado en el sistema
 
-Si ya tienes Postgres en tu máquina, crea la base y el usuario y usa en `apiCooperative/.env` el `DB_HOST`, `DB_PORT`, etc. que correspondan (por ejemplo `DB_HOST=127.0.0.1`, `DB_PORT=5432`).
+Si ya tienes Postgres en tu máquina, crea la base y el usuario y usa en `apiTuMetaApp/.env` el `DB_HOST`, `DB_PORT`, etc. que correspondan (por ejemplo `DB_HOST=127.0.0.1`, `DB_PORT=5432`).
 
 ---
 
 ## 3. Configurar .env para desarrollo
 
-### 3.1 `apiCooperative/.env`
+### 3.1 `apiTuMetaApp/.env`
 
 Que apunte a la BD y a URLs locales:
 
 ```env
 APP_ENV=local
 APP_DEBUG=true
-APP_URL=http://localhost:8585
-FRONTEND_URL=http://localhost:3535
+APP_URL=http://localhost:8686
+FRONTEND_URL=http://localhost:3737
 
 # Si usas Postgres en Docker (opción A)
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5435
-DB_DATABASE=cooperative
-DB_USERNAME=cooperative
+DB_DATABASE=tumetaapp
+DB_USERNAME=tumetaapp
 DB_PASSWORD=secret
 
-# Sanctum / CORS para el front en local (puerto 3535)
-SANCTUM_STATEFUL_DOMAINS=localhost:3535,127.0.0.1:3535
-CORS_ALLOWED_ORIGINS=http://localhost:3535
+# Sanctum / CORS para el front en local (puerto 3737)
+SANCTUM_STATEFUL_DOMAINS=localhost:3737,127.0.0.1:3737
+CORS_ALLOWED_ORIGINS=http://localhost:3737
 ```
 
 Si usas Postgres local (opción B), cambia `DB_HOST` y `DB_PORT` según tu instalación.
 
 ### 3.2 Cliente Nuxt
 
-El cliente usa por defecto `http://localhost:8000` como API (`nuxt.config.ts`). Si la API en local va en otro puerto (por ejemplo 8585), en `clientCooperative` puedes hacer:
+El cliente usa por defecto `http://localhost:8000` como API (`nuxt.config.ts`). Si la API en local va en otro puerto (por ejemplo 8686), en `clientTuMetaApp` puedes hacer:
 
-Por defecto el frontend usa `http://localhost:8585` como API. Si necesitas cambiarlo, crea un `.env` en `clientCooperative/` con `NUXT_PUBLIC_API_BASE=http://localhost:8585`.
+Por defecto el frontend usa `http://localhost:8686` como API. Si necesitas cambiarlo, crea un `.env` en `clientTuMetaApp/` con `NUXT_PUBLIC_API_BASE=http://localhost:8686`.
 
 ---
 
@@ -84,7 +84,7 @@ Por defecto el frontend usa `http://localhost:8585` como API. Si necesitas cambi
 
 ```bash
 # API
-cd apiCooperative
+cd apiTuMetaApp
 composer install
 cp .env.example .env   # si no tienes .env
 php artisan key:generate
@@ -92,7 +92,7 @@ php artisan migrate
 # (opcional) npm install && npm run build si usas Vite en la API
 
 # Cliente
-cd ../clientCooperative
+cd ../clientTuMetaApp
 pnpm install
 ```
 
@@ -105,36 +105,36 @@ Abre **dos terminales** en la raíz del proyecto.
 **Terminal 1 – API:**
 
 ```bash
-cd apiCooperative
+cd apiTuMetaApp
 composer run dev
 ```
 
-Eso levanta el servidor Laravel en **http://localhost:8585**, cola, logs y Vite. Si solo quieres el servidor:
+Eso levanta el servidor Laravel en **http://localhost:8686**, cola, logs y Vite. Si solo quieres el servidor:
 
 ```bash
-php artisan serve --port=8585
+php artisan serve --port=8686
 ```
 
 **Terminal 2 – Cliente:**
 
 ```bash
-cd clientCooperative
+cd clientTuMetaApp
 pnpm dev
 ```
 
-Frontend en **http://localhost:3535**.
+Frontend en **http://localhost:3737**.
 
 ---
 
 ## 6. URLs en desarrollo
 
-| Servicio | URL |
-|----------|-----|
-| API | http://localhost:8585 |
-| Cliente | http://localhost:3535 |
-| Postgres (Docker) | localhost:5435 |
+| Servicio          | URL                   |
+| ----------------- | --------------------- |
+| API               | http://localhost:8686 |
+| Cliente           | http://localhost:3737 |
+| Postgres (Docker) | localhost:5435        |
 
-Abre el navegador en **http://localhost:3535** y el cliente consumirá la API en **http://localhost:8585**.
+Abre el navegador en **http://localhost:3737** y el cliente consumirá la API en **http://localhost:8686**.
 
 ---
 
@@ -142,9 +142,10 @@ Abre el navegador en **http://localhost:3535** y el cliente consumirá la API en
 
 - **Solo desarrollo local:** no uses el compose de producción. Usa solo `docker-compose.dev.yml` para Postgres (o nada si Postgres es local).
 - **Probar el stack como en producción (local):**  
-  `docker compose -f clientCooperative/docker-compose.yml up -d`  
+  `docker compose -f clientTuMetaApp/docker-compose.yml up -d`  
   Eso levanta API + cliente + Postgres como en el VPS (sin recarga en vivo).
 
 Resumen:
+
 - **Dev:** Postgres en Docker (opcional) + `composer run dev` + `pnpm dev`.
-- **Prod (local o VPS):** `docker compose -f clientCooperative/docker-compose.yml up -d`.
+- **Prod (local o VPS):** `docker compose -f clientTuMetaApp/docker-compose.yml up -d`.

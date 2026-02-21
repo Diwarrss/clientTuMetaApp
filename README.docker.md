@@ -14,77 +14,77 @@ Stack: Laravel 12 (API) + Nuxt 4 (Cliente) + PostgreSQL 16
 
 ### 1. Estructura del proyecto
 
-Se usa el **docker-compose del cliente**; el **.env de la API** va dentro de `apiCooperative/`:
+Se usa el **docker-compose del cliente**; el **.env de la API** va dentro de `apiTuMetaApp/`:
 
 ```
-cooperative/                    # carpeta raíz (o la que contenga ambos proyectos)
-├── apiCooperative/
+tumetaapp/                    # carpeta raíz (o la que contenga ambos proyectos)
+├── apiTuMetaApp/
 │   ├── .env                    # Variables de Laravel y credenciales PostgreSQL
 │   └── ...
-└── clientCooperative/
+└── clientTuMetaApp/
     ├── docker-compose.yml      # Compose que levanta todo (API, client, postgres)
     └── ...
 ```
 
 ### 2. Configurar variables de entorno
 
-- **API:** editar `apiCooperative/.env` (credenciales DB, APP_KEY, APP_URL, etc.).
+- **API:** editar `apiTuMetaApp/.env` (credenciales DB, APP_KEY, APP_URL, etc.).
 - Para que **Postgres** y los contenedores usen las mismas credenciales, crear también un `.env` en la **carpeta raíz** (donde ejecutas `docker compose`) con al menos:
-  - `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (mismos valores que en `apiCooperative/.env`).
+  - `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (mismos valores que en `apiTuMetaApp/.env`).
 
 **Importante para producción:**
 
-- Generar `APP_KEY`: `php artisan key:generate` (o en `apiCooperative/.env`)
+- Generar `APP_KEY`: `php artisan key:generate` (o en `apiTuMetaApp/.env`)
 - `APP_URL` y `FRONTEND_URL` = URLs públicas
 - `NUXT_PUBLIC_API_BASE` = URL pública de la API
 - `SANCTUM_STATEFUL_DOMAINS` y `CORS_ALLOWED_ORIGINS` = dominio del frontend
 
 ### 3. Levantar servicios
 
-Ejecutar desde la **carpeta raíz** (la que contiene `apiCooperative/` y `clientCooperative/`):
+Ejecutar desde la **carpeta raíz** (la que contiene `apiTuMetaApp/` y `clientTuMetaApp/`):
 
 ```bash
-cd cooperative
-docker compose -f clientCooperative/docker-compose.yml build --no-cache
-docker compose -f clientCooperative/docker-compose.yml up -d
+cd tumetaapp
+docker compose -f clientTuMetaApp/docker-compose.yml build --no-cache
+docker compose -f clientTuMetaApp/docker-compose.yml up -d
 ```
 
-### 4. Generar APP_KEY (si no está en apiCooperative/.env)
+### 4. Generar APP_KEY (si no está en apiTuMetaApp/.env)
 
 ```bash
-docker compose -f clientCooperative/docker-compose.yml exec api php artisan key:generate
+docker compose -f clientTuMetaApp/docker-compose.yml exec api php artisan key:generate
 ```
 
 ### 5. Ejecutar seeders (opcional)
 
 ```bash
-docker compose -f clientCooperative/docker-compose.yml exec api php artisan db:seed
+docker compose -f clientTuMetaApp/docker-compose.yml exec api php artisan db:seed
 ```
 
 ## Puertos
 
 | Servicio   | Puerto | URL local             |
 | ---------- | ------ | --------------------- |
-| API        | 8585   | http://localhost:8585 |
-| Cliente    | 3535   | http://localhost:3535 |
+| API        | 8686   | http://localhost:8686 |
+| Cliente    | 3737   | http://localhost:3737 |
 | PostgreSQL | 5435   | localhost:5435        |
 
 ## Comandos útiles
 
-Usar siempre `-f clientCooperative/docker-compose.yml` desde la carpeta raíz:
+Usar siempre `-f clientTuMetaApp/docker-compose.yml` desde la carpeta raíz:
 
 ```bash
 # Ver logs
-docker compose -f clientCooperative/docker-compose.yml logs -f
+docker compose -f clientTuMetaApp/docker-compose.yml logs -f
 
 # Entrar al contenedor API
-docker compose -f clientCooperative/docker-compose.yml exec api sh
+docker compose -f clientTuMetaApp/docker-compose.yml exec api sh
 
 # Migraciones
-docker compose -f clientCooperative/docker-compose.yml exec api php artisan migrate
+docker compose -f clientTuMetaApp/docker-compose.yml exec api php artisan migrate
 
 # Reiniciar
-docker compose -f clientCooperative/docker-compose.yml down && docker compose -f clientCooperative/docker-compose.yml up -d
+docker compose -f clientTuMetaApp/docker-compose.yml down && docker compose -f clientTuMetaApp/docker-compose.yml up -d
 ```
 
 ## Producción con dominio
@@ -92,8 +92,8 @@ docker compose -f clientCooperative/docker-compose.yml down && docker compose -f
 Para usar un dominio (ej: `app.tudominio.com` y `api.tudominio.com`):
 
 1. Configurar un reverse proxy (Nginx o Caddy) en el host
-2. Proxy `api.tudominio.com` → `localhost:8585`
-3. Proxy `app.tudominio.com` → `localhost:3535`
+2. Proxy `api.tudominio.com` → `localhost:8686`
+3. Proxy `app.tudominio.com` → `localhost:3737`
 4. Ajustar `.env`:
    - `APP_URL=https://api.tudominio.com`
    - `FRONTEND_URL=https://app.tudominio.com`
