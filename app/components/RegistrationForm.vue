@@ -44,6 +44,8 @@ function findMatchingCategory(age: number): number | null {
 }
 
 const schema = z.object({
+  guest_name: z.string().min(2, 'El nombre es obligatorio').optional(),
+  guest_email: z.string().email('Correo válido').optional(),
   fecha_nacimiento: z.string().min(1, 'La fecha de nacimiento es obligatoria'),
   identificacion: z.string().min(5, 'La identificación es obligatoria').max(50),
   eps: z.string().max(100).optional(),
@@ -62,6 +64,8 @@ type Schema = z.infer<typeof schema>
 const { handleSubmit, setFieldValue, defineField } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
+    guest_name: '',
+    guest_email: '',
     fecha_nacimiento: '',
     identificacion: '',
     eps: '',
@@ -70,6 +74,8 @@ const { handleSubmit, setFieldValue, defineField } = useForm({
   },
 })
 
+const [guestName, guestNameAttrs] = defineField('guest_name')
+const [guestEmail, guestEmailAttrs] = defineField('guest_email')
 const [fechaNacimiento, fechaNacimientoAttrs] = defineField('fecha_nacimiento')
 const [identificacion, identificacionAttrs] = defineField('identificacion')
 const [eps, epsAttrs] = defineField('eps')
@@ -100,9 +106,17 @@ const successMessage = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
 const { $api, $csrf } = useNuxtApp()
 
+const registrationMode = ref<'choice' | 'guest' | 'google'>('choice')
+
+const isGuestMode = computed(() => registrationMode.value === 'guest')
+
 const onSubmit = handleSubmit(async (values) => {
   if (!selectedCategoryId.value) {
     errorMessage.value = 'Selecciona una categoría'
+    return
+  }
+  if (isGuestMode.value && (!values.guest_name?.trim() || !values.guest_email)) {
+    errorMessage.value = 'Nombre y correo son obligatorios'
     return
   }
 
@@ -115,17 +129,22 @@ const onSubmit = handleSubmit(async (values) => {
     const formData = new FormData()
     formData.append('event_id', String(props.eventId))
     formData.append('category_id', String(selectedCategoryId.value))
+    if (isGuestMode.value) {
+      formData.append('guest_name', values.guest_name!.trim())
+      formData.append('guest_email', values.guest_email!)
+    }
     formData.append('identificacion', values.identificacion)
     if (values.eps) formData.append('eps', values.eps)
     if (values.talla_camisa) formData.append('talla_camisa', values.talla_camisa)
     formData.append('comprobante', values.comprobante)
 
-    await $api('/registrations', {
+    const endpoint = isGuestMode.value ? '/registrations/guest' : '/registrations'
+    await $api(endpoint, {
       method: 'POST',
       body: formData,
     })
 
-    successMessage.value = 'Inscripción registrada. Revisaremos tu comprobante y te notificaremos.'
+    successMessage.value = 'Inscripción registrada. Revisaremos tu comprobante y te notificaremos por correo.'
   }
   catch (e: any) {
     const errors = e?.data?.errors
@@ -141,6 +160,13 @@ const onSubmit = handleSubmit(async (values) => {
     isLoading.value = false
   }
 })
+
+function selectGuest() {
+  registrationMode.value = 'guest'
+}
+function selectGoogle() {
+  navigateTo(`/login?redirect=${encodeURIComponent($route.fullPath)}`)
+}
 </script>
 
 <template>
@@ -150,25 +176,106 @@ const onSubmit = handleSubmit(async (values) => {
         El plazo de inscripción ha vencido.
       </p>
     </div>
-    <div v-else-if="!user" class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-      <p class="text-sm text-amber-200 mb-3">
-        Debes iniciar sesión para inscribirte. Si no tienes cuenta, regístrate primero.
-      </p>
-      <NuxtLink
-        :to="`/login?redirect=${encodeURIComponent($route.fullPath)}`"
-        class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600"
-      >
-        Iniciar sesión para inscribirse
-        <Icon name="i-lucide-log-in" class="size-4" />
-      </NuxtLink>
+    <!-- Pantalla de elección: invitado o Google -->
+    <div v-else-if="!user && registrationMode === 'choice'" class="space-y-6">
+      <div class="text-center">
+        <h3 class="text-lg font-semibold text-white">
+          ¿Cómo te gustaría inscribirte?
+        </h3>
+        <p class="mt-1 text-sm text-slate-400">
+          Elige la opción que mejor se adapte a ti
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <button
+          type="button"
+          class="flex w-full items-center gap-4 rounded-xl border border-white/20 bg-white/5 p-4 text-left transition hover:border-emerald-500/50 hover:bg-white/10"
+          @click="selectGuest"
+        >
+          <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-emerald-500">
+            <Icon name="i-lucide-zap" class="size-6 text-white" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="font-medium text-emerald-400">
+              Continuar como invitado
+            </p>
+            <p class="text-sm text-slate-400">
+              Inscripción rápida sin crear cuenta.
+            </p>
+          </div>
+          <Icon name="i-lucide-chevron-right" class="size-5 shrink-0 text-slate-500" />
+        </button>
+
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <span class="w-full border-t border-white/20" />
+          </div>
+          <div class="relative flex justify-center text-xs uppercase">
+            <span class="bg-slate-900 px-2 text-slate-500">o</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-3 transition hover:border-white/30 hover:bg-white/10"
+          @click="selectGoogle"
+        >
+          <Icon name="simple-icons:google" class="size-5" />
+          <span>Continuar con Google</span>
+        </button>
+      </div>
     </div>
 
-    <form v-else class="space-y-4" @submit="onSubmit">
+    <form v-else-if="user || registrationMode === 'guest'" class="space-y-4" @submit="onSubmit">
       <div v-if="successMessage" class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-200 text-sm">
         {{ successMessage }}
       </div>
       <div v-else-if="errorMessage" class="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-200 text-sm">
         {{ errorMessage }}
+      </div>
+
+      <!-- Volver atrás (solo en modo invitado) -->
+      <div v-if="isGuestMode && !successMessage" class="flex justify-start">
+        <button
+          type="button"
+          class="text-sm text-slate-400 hover:text-white"
+          @click="registrationMode = 'choice'"
+        >
+          <Icon name="i-lucide-arrow-left" class="mr-1 inline size-4" />
+          Cambiar opción
+        </button>
+      </div>
+
+      <!-- Campos guest (solo cuando no hay usuario) -->
+      <div v-if="isGuestMode" class="grid gap-4 sm:grid-cols-2">
+        <div class="space-y-2">
+          <Label for="guest_name">Nombre completo *</Label>
+          <Input
+            id="guest_name"
+            v-model="guestName"
+            v-bind="guestNameAttrs"
+            placeholder="Tu nombre"
+            class="bg-white/5 border-white/20 text-white"
+          />
+          <p v-if="guestNameAttrs.errorMessage" class="text-sm text-red-400">
+            {{ guestNameAttrs.errorMessage }}
+          </p>
+        </div>
+        <div class="space-y-2">
+          <Label for="guest_email">Correo electrónico *</Label>
+          <Input
+            id="guest_email"
+            v-model="guestEmail"
+            type="email"
+            v-bind="guestEmailAttrs"
+            placeholder="tu@correo.com"
+            class="bg-white/5 border-white/20 text-white"
+          />
+          <p v-if="guestEmailAttrs.errorMessage" class="text-sm text-red-400">
+            {{ guestEmailAttrs.errorMessage }}
+          </p>
+        </div>
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">
