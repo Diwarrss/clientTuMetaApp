@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cooperative_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-cooperative}
+      POSTGRES_USER: ${DB_USERNAME:-cooperative}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-cooperative} -d ${DB_DATABASE:-cooperative}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cooperative
+
+  api:
+    build:
+      context: ../apiCooperative
+      dockerfile: Dockerfile
+    container_name: cooperative_api
+    restart: unless-stopped
+    ports:
+      - "8585:80"
+    volumes:
+      - api_storage:/var/www/html/storage
+      - api_cache:/var/www/html/bootstrap/cache
+    env_file:
+      - ../apiCooperative/.env
+    environment:
+      # Solo overrides de red Docker (lo demás viene de env_file)
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cooperative
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://localhost:8585}
+    container_name: cooperative_client
+    restart: unless-stopped
+    ports:
+      - "3535:3000"
+    environment:
+      - NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE:-http://localhost:8585}
+    depends_on:
+      - api
+    networks:
+      - cooperative
+
+# Volúmenes nombrados: persisten entre builds y restarts. NO borrar con -v.
+volumes:
+  postgres_data:   # BD PostgreSQL
+  api_storage:    # storage Laravel (imágenes, uploads)
+  api_cache:      # bootstrap/cache Laravel
+
+networks:
+  cooperative:
+    driver: bridge
