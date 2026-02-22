@@ -57,6 +57,9 @@ export default defineNuxtConfig({
   routeRules: {
     "/components": { redirect: "/components/accordion" },
     "/settings": { redirect: "/settings/profile" },
+    "/settings/account": { redirect: "/settings/profile" },
+    "/settings/notifications": { redirect: "/settings/profile" },
+    "/settings/display": { redirect: "/settings/profile" },
   },
 
   imports: {

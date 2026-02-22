@@ -67,35 +67,14 @@ export const navMenu: NavMenu[] = [
     heading: 'Configuración',
     items: [
       {
-        title: 'Ajustes',
-        icon: 'i-lucide-settings',
-        children: [
-          {
-            title: 'Perfil',
-            icon: 'i-lucide-circle',
-            link: '/settings/profile',
-          },
-          {
-            title: 'Cuenta',
-            icon: 'i-lucide-circle',
-            link: '/settings/account',
-          },
-          {
-            title: 'Apariencia',
-            icon: 'i-lucide-circle',
-            link: '/settings/appearance',
-          },
-          {
-            title: 'Notificaciones',
-            icon: 'i-lucide-circle',
-            link: '/settings/notifications',
-          },
-          {
-            title: 'Pantalla',
-            icon: 'i-lucide-circle',
-            link: '/settings/display',
-          },
-        ],
+        title: 'Mi perfil',
+        icon: 'i-lucide-user',
+        link: '/settings/profile',
+      },
+      {
+        title: 'Apariencia',
+        icon: 'i-lucide-paintbrush',
+        link: '/settings/appearance',
       },
     ],
   },

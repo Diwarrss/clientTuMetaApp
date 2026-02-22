@@ -27,20 +27,14 @@ const stats = ref<{
   commission_rate: number
 } | null>(null)
 
-const contractAccepted = ref<boolean | null>(null)
-
 const fetchData = async () => {
   loading.value = true
   try {
-    const [dashboardRes, contractRes] = await Promise.all([
-      $api<{ data: typeof stats.value }>('/admin/dashboard'),
-      $api<{ data: { accepted: boolean } }>('/admin/contract').catch(() => ({ data: { accepted: true } }))
-    ])
-    stats.value = dashboardRes.data
-    contractAccepted.value = contractRes.data.accepted
+    const res = await $api<{ data: typeof stats.value }>('/admin/dashboard')
+    stats.value = res.data
   }
   catch {
-    contractAccepted.value = true
+    stats.value = null
   }
   finally {
     loading.value = false
@@ -60,27 +54,6 @@ onMounted(fetchData)
       <h2 class="text-2xl font-bold tracking-tight">
         Dashboard
       </h2>
-    </div>
-
-    <!-- Alerta: Contrato pendiente -->
-    <div v-if="contractAccepted === false" class="rounded-lg border border-amber-500/40 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <p class="font-medium text-amber-800 dark:text-amber-200">
-            Debes aceptar el contrato de prestación de servicios
-          </p>
-          <p class="mt-1 text-sm text-amber-700 dark:text-slate-400">
-            Para crear eventos y utilizar la plataforma necesitas aceptar primero el contrato legal.
-          </p>
-        </div>
-        <div class="shrink-0">
-          <NuxtLink to="/admin/contract">
-            <Button variant="default">
-              Aceptar contrato
-            </Button>
-          </NuxtLink>
-        </div>
-      </div>
     </div>
 
     <main class="@container/main flex flex-1 flex-col gap-4 md:gap-8">

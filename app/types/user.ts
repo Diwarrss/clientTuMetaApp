@@ -18,5 +18,7 @@ export interface PaginatedUsers {
     last_page: number
     per_page: number
     total: number
+    /** Límite de usuarios por empresa (solo para company_admin) */
+    max_users_per_company?: number
   }
 }

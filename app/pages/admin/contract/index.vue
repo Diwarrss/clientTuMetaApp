@@ -44,6 +44,7 @@ const handleAccept = async () => {
   try {
     await $api('/admin/contract/accept', { method: 'POST' })
     toast.success('Contrato aceptado correctamente')
+    useState<boolean | null>('contract.accepted', () => null).value = true
     await fetchContract()
     router.push('/dashboard')
   }

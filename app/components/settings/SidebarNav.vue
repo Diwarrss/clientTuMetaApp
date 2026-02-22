@@ -10,24 +10,12 @@ const route = useRoute()
 
 const sidebarNavItems: Item[] = [
   {
-    title: 'Profile',
+    title: 'Perfil',
     href: '/settings/profile',
   },
   {
-    title: 'Account',
-    href: '/settings/account',
-  },
-  {
-    title: 'Appearance',
+    title: 'Apariencia',
     href: '/settings/appearance',
-  },
-  {
-    title: 'Notifications',
-    href: '/settings/notifications',
-  },
-  {
-    title: 'Display',
-    href: '/settings/display',
   },
 ]
 </script>

@@ -25,6 +25,11 @@ export default defineNuxtPlugin(() => {
           'X-XSRF-TOKEN': csrfToken
         }
       }
+    },
+    async onResponseError({ response }) {
+      if (response.status === 403 && typeof response._data === 'object' && response._data?.contract_required) {
+        await navigateTo('/admin/contract')
+      }
     }
   })
 

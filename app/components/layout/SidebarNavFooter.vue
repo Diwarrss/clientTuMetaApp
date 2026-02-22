@@ -65,43 +65,27 @@ const showModalTheme = ref(false)
               </Avatar>
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-semibold">{{ user?.name || 'Usuario' }}</span>
-                <span class="truncate text-xs">{{ user?.email || '' }}</span>
+                <span class="truncate text-xs text-muted-foreground">{{ user?.email || '' }}</span>
               </div>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Icon name="i-lucide-sparkles" />
-              Upgrade to Pro
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Icon name="i-lucide-badge-check" />
-              Account
+            <DropdownMenuItem as-child>
+              <NuxtLink to="/settings/profile" @click="setOpenMobile(false)">
+                <Icon name="i-lucide-user" />
+                Mi perfil
+              </NuxtLink>
             </DropdownMenuItem>
             <DropdownMenuItem as-child>
               <NuxtLink to="/settings" @click="setOpenMobile(false)">
                 <Icon name="i-lucide-settings" />
-                Settings
-              </NuxtLink>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Icon name="i-lucide-bell" />
-              Notifications
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem as-child>
-              <NuxtLink to="https://github.com/dianprata/nuxt-shadcn-dashboard" external target="_blank">
-                <Icon name="i-lucide-github" />
-                Github Repository
+                Configuración
               </NuxtLink>
             </DropdownMenuItem>
             <DropdownMenuItem @click="showModalTheme = true">
               <Icon name="i-lucide-paintbrush" />
-              Theme
+              Apariencia
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
@@ -117,9 +101,9 @@ const showModalTheme = ref(false)
   <Dialog v-model:open="showModalTheme">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Customize</DialogTitle>
+        <DialogTitle>Apariencia</DialogTitle>
         <DialogDescription class="text-xs text-muted-foreground">
-          Customize & Preview in Real Time
+          Personaliza colores y tema de la plataforma
         </DialogDescription>
       </DialogHeader>
       <ThemeCustomize />

@@ -20,10 +20,16 @@ const pagination = ref({
   current_page: 1,
   last_page: 1,
   per_page: 15,
-  total: 0
+  total: 0,
+  max_users_per_company: undefined as number | undefined
 })
 
-const canCreate = computed(() => hasPermission('users.create'))
+const canCreate = computed(() => {
+  if (!hasPermission('users.create')) return false
+  const max = pagination.value.max_users_per_company
+  if (max === undefined) return true
+  return pagination.value.total < max
+})
 const canEdit = computed(() => hasPermission('users.edit'))
 const canDelete = computed(() => hasPermission('users.delete'))
 
@@ -94,7 +100,11 @@ watch(searchQuery, () => {
         Gestión de Usuarios
       </h2>
       <PermissionGate permission="users.create">
-        <Button @click="router.push('/admin/users/create')">
+        <Button
+          @click="router.push('/admin/users/create')"
+          :disabled="!canCreate"
+          :title="!canCreate && pagination.max_users_per_company ? 'Tu empresa ya tiene el máximo de usuarios' : undefined"
+        >
           <Icon name="i-lucide-plus" class="mr-2 h-4 w-4" />
           Nuevo Usuario
         </Button>

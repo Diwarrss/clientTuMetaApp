@@ -1,10 +1,19 @@
 <script setup lang="ts">
 const colorMode = useColorMode()
+const { user, fetchUser } = useAuth()
 
 defineProps<{
   /** Mostrar enlace "Inicio" (para página de evento) */
   showInicio?: boolean
 }>()
+
+onMounted(async () => {
+  try {
+    await fetchUser()
+  } catch {
+    // No logueado
+  }
+})
 
 function toggleTheme() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
@@ -37,6 +46,7 @@ function toggleTheme() {
           Inicio
         </NuxtLink>
         <NuxtLink
+          v-if="!user"
           to="/login"
           class="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
         >
@@ -47,8 +57,8 @@ function toggleTheme() {
           to="/dashboard"
           class="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600 transition-colors"
         >
-          <Icon name="i-lucide-calendar-plus" class="size-4" />
-          Organiza tu evento
+          <Icon :name="user ? 'i-lucide-layout-dashboard' : 'i-lucide-calendar-plus'" class="size-4" />
+          {{ user ? 'Ir al panel' : 'Organiza tu evento' }}
         </NuxtLink>
       </nav>
     </div>

@@ -25,6 +25,16 @@ const inscriptionClosed = computed(() => {
 })
 
 const TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const
+const GRUPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const
+
+interface ColombiaDepto {
+  id: number
+  departamento: string
+  ciudades: string[]
+}
+
+const colombiaData = ref<ColombiaDepto[]>([])
+const epsList = ref<string[]>([])
 
 function calculateAge(birthDate: Date): number {
   const today = new Date()
@@ -50,6 +60,11 @@ const schema = z.object({
   identificacion: z.string().min(5, 'La identificación es obligatoria').max(50),
   eps: z.string().max(100).optional(),
   talla_camisa: z.enum(TALLAS).optional(),
+  grupo_sanguineo: z.string().max(10).optional(),
+  departamento: z.string().max(100).optional(),
+  ciudad: z.string().max(100).optional(),
+  direccion: z.string().min(5, 'La dirección es obligatoria').max(255),
+  contacto_emergencia: z.string().min(2, 'El contacto de emergencia es obligatorio').max(255),
   comprobante: z.union([
     z.instanceof(File).refine(
       f => ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'].includes(f.type),
@@ -70,6 +85,11 @@ const { handleSubmit, setFieldValue, defineField } = useForm({
     identificacion: '',
     eps: '',
     talla_camisa: undefined as (typeof TALLAS)[number] | undefined,
+    grupo_sanguineo: '',
+    departamento: '',
+    ciudad: '',
+    direccion: '',
+    contacto_emergencia: '',
     comprobante: undefined as File | undefined,
   },
 })
@@ -80,7 +100,18 @@ const [fechaNacimiento, fechaNacimientoAttrs] = defineField('fecha_nacimiento')
 const [identificacion, identificacionAttrs] = defineField('identificacion')
 const [eps, epsAttrs] = defineField('eps')
 const [tallaCamisa, tallaCamisaAttrs] = defineField('talla_camisa')
+const [grupoSanguineo, grupoSanguineoAttrs] = defineField('grupo_sanguineo')
+const [departamento, departamentoAttrs] = defineField('departamento')
+const [ciudad, ciudadAttrs] = defineField('ciudad')
+const [direccion, direccionAttrs] = defineField('direccion')
+const [contactoEmergencia, contactoEmergenciaAttrs] = defineField('contacto_emergencia')
 const [comprobante, comprobanteAttrs] = defineField('comprobante')
+
+const ciudadesDisponibles = computed(() => {
+  if (!departamento.value || !colombiaData.value.length) return []
+  const depto = colombiaData.value.find(d => d.departamento === departamento.value)
+  return depto?.ciudades ?? []
+})
 const comprobanteInput = ref<HTMLInputElement | null>(null)
 
 // Auto-calcular categoría cuando cambia la fecha de nacimiento
@@ -102,6 +133,21 @@ onMounted(async () => {
   } catch {
     // Not logged in
   }
+  try {
+    const [colombiaRes, epsRes] = await Promise.all([
+      $fetch<ColombiaDepto[]>('/data/colombia.json'),
+      $fetch<string[]>('/data/eps-colombia.json'),
+    ])
+    colombiaData.value = colombiaRes
+    epsList.value = epsRes
+  } catch {
+    colombiaData.value = []
+    epsList.value = []
+  }
+})
+
+watch(departamento, () => {
+  setFieldValue('ciudad', '')
 })
 const isLoading = ref(false)
 const successMessage = ref<string | null>(null)
@@ -143,6 +189,11 @@ const onSubmit = handleSubmit(async (values) => {
     formData.append('identificacion', values.identificacion)
     if (values.eps) formData.append('eps', values.eps)
     if (values.talla_camisa) formData.append('talla_camisa', values.talla_camisa)
+    if (values.grupo_sanguineo) formData.append('grupo_sanguineo', values.grupo_sanguineo)
+    if (values.departamento) formData.append('departamento', values.departamento)
+    if (values.ciudad) formData.append('ciudad', values.ciudad)
+    formData.append('direccion', values.direccion)
+    formData.append('contacto_emergencia', values.contacto_emergencia)
     formData.append('comprobante', values.comprobante)
 
     const endpoint = isGuestMode.value ? '/registrations/guest' : '/registrations'
@@ -266,14 +317,16 @@ function triggerComprobanteClick() {
 
       <!-- Volver atrás (solo en modo invitado) -->
       <div v-if="isGuestMode && !successMessage" class="flex justify-start">
-        <button
+        <Button
           type="button"
-          class="text-sm text-muted-foreground hover:text-foreground"
+          variant="outline"
+          size="sm"
+          class="gap-2 border-emerald-500/50 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
           @click="registrationMode = 'choice'"
         >
-          <Icon name="i-lucide-arrow-left" class="mr-1 inline size-4" />
+          <Icon name="i-lucide-arrow-left" class="size-4" />
           Cambiar opción
-        </button>
+        </Button>
       </div>
 
       <!-- Campos guest (solo cuando no hay usuario) -->
@@ -329,41 +382,115 @@ function triggerComprobanteClick() {
         </div>
       </div>
 
-      <div class="space-y-2">
-        <Label for="identificacion">Número de identificación *</Label>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="space-y-2">
+          <Label for="identificacion">Cédula o documento *</Label>
           <Input
             id="identificacion"
             v-model="identificacion"
             v-bind="identificacionAttrs"
-            placeholder="Cédula o documento"
+            placeholder="Número de identificación"
           />
-        <p v-if="identificacionAttrs.errorMessage" class="text-sm text-red-400">
-          {{ identificacionAttrs.errorMessage }}
-        </p>
+          <p v-if="identificacionAttrs.errorMessage" class="text-sm text-red-400">
+            {{ identificacionAttrs.errorMessage }}
+          </p>
+        </div>
+        <div class="space-y-2">
+          <Label for="eps">EPS (opcional)</Label>
+          <Select v-model="eps" v-bind="epsAttrs">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona tu EPS" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">
+                No especificado
+              </SelectItem>
+              <SelectItem v-for="e in epsList" :key="e" :value="e">
+                {{ e }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div class="space-y-2">
+          <Label for="talla_camisa">Talla de camisa</Label>
+          <Select v-model="tallaCamisa" v-bind="tallaCamisaAttrs">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona talla" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="t in TALLAS" :key="t" :value="t">
+                {{ t }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div class="space-y-2">
-        <Label for="eps">EPS (opcional)</Label>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="space-y-2">
+          <Label for="grupo_sanguineo">Grupo sanguíneo</Label>
+          <Select v-model="grupoSanguineo" v-bind="grupoSanguineoAttrs">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="g in GRUPOS_SANGUINEOS" :key="g" :value="g">
+                {{ g }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div class="space-y-2">
+          <Label for="departamento">Departamento</Label>
+          <Select v-model="departamento" v-bind="departamentoAttrs">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona departamento" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="d in colombiaData" :key="d.id" :value="d.departamento">
+                {{ d.departamento }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div class="space-y-2">
+          <Label for="ciudad">Ciudad</Label>
+          <Select v-model="ciudad" v-bind="ciudadAttrs" :disabled="!departamento">
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona ciudad" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="c in ciudadesDisponibles" :key="c" :value="c">
+                {{ c }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div class="space-y-2">
+          <Label for="contacto_emergencia">Contacto de emergencia *</Label>
           <Input
-            id="eps"
-            v-model="eps"
-            v-bind="epsAttrs"
-            placeholder="Nombre de tu EPS"
+            id="contacto_emergencia"
+            v-model="contactoEmergencia"
+            v-bind="contactoEmergenciaAttrs"
+            placeholder="Nombre y teléfono"
           />
+          <p v-if="contactoEmergenciaAttrs.errorMessage" class="text-sm text-red-400">
+            {{ contactoEmergenciaAttrs.errorMessage }}
+          </p>
+        </div>
       </div>
 
       <div class="space-y-2">
-        <Label for="talla_camisa">Talla de camisa</Label>
-        <Select v-model="tallaCamisa" v-bind="tallaCamisaAttrs">
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona talla" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="t in TALLAS" :key="t" :value="t">
-              {{ t }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <Label for="direccion">Dirección *</Label>
+        <Input
+          id="direccion"
+          v-model="direccion"
+          v-bind="direccionAttrs"
+          placeholder="Calle, número, barrio"
+        />
+        <p v-if="direccionAttrs.errorMessage" class="text-sm text-red-400">
+          {{ direccionAttrs.errorMessage }}
+        </p>
       </div>
 
       <div class="space-y-2">
