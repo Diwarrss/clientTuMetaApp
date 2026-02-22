@@ -27,8 +27,15 @@ defineProps<{
         </blockquote>
       </div>
     </div>
-    <div class="mx-auto flex-1 lg:p-8">
+    <div class="relative mx-auto flex-1 lg:p-8">
       <slot />
+      <NuxtLink
+        to="/"
+        class="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-105 hover:bg-emerald-600 hover:shadow-xl dark:shadow-emerald-900/40"
+      >
+        <Icon name="i-lucide-home" class="size-5" />
+        Inicio
+      </NuxtLink>
     </div>
   </div>
 </template>

@@ -180,14 +180,20 @@ const event = computed(() => eventData.value?.data ?? null)
           </p>
         </div>
 
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-          <h2 class="text-xl font-semibold mb-6 text-slate-900 dark:text-white">Inscripción</h2>
-          <RegistrationForm
-            :event-id="event.id"
-            :categories="event.categories"
-            :precio-base="event.precio_base"
-            :inscription-deadline="event.inscription_deadline"
-          />
+        <div class="grid gap-6 mb-12 md:grid-cols-2">
+          <VerificationForm :event-id="event.id" />
+          <div class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none">
+            <h3 class="text-lg font-semibold mb-2 text-slate-900 dark:text-white">Inscribirse</h3>
+            <p class="text-sm text-muted-foreground mb-4">
+              ¿Aún no te has inscrito? Completa el formulario para participar.
+            </p>
+            <RegistrationForm
+              :event-id="event.id"
+              :categories="event.categories"
+              :precio-base="event.precio_base"
+              :inscription-deadline="event.inscription_deadline"
+            />
+          </div>
         </div>
       </template>
     </main>
