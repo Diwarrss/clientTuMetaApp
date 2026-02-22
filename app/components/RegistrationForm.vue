@@ -81,6 +81,7 @@ const [identificacion, identificacionAttrs] = defineField('identificacion')
 const [eps, epsAttrs] = defineField('eps')
 const [tallaCamisa, tallaCamisaAttrs] = defineField('talla_camisa')
 const [comprobante, comprobanteAttrs] = defineField('comprobante')
+const comprobanteInput = ref<HTMLInputElement | null>(null)
 
 // Auto-calcular categoría cuando cambia la fecha de nacimiento
 const selectedCategoryId = ref<number | null>(props.categories[0]?.id ?? null)
@@ -92,7 +93,7 @@ watch(fechaNacimiento, (val) => {
   }
 }, { immediate: true })
 
-const { user, fetchUser } = useAuth()
+const { user, fetchUser, logout } = useAuth()
 const route = useRoute()
 
 onMounted(async () => {
@@ -110,6 +111,11 @@ const { $api, $csrf } = useNuxtApp()
 const registrationMode = ref<'choice' | 'guest' | 'google'>('choice')
 
 const isGuestMode = computed(() => registrationMode.value === 'guest')
+
+function onInvalid(errs: Record<string, unknown>) {
+  const first = Object.values(errs).flat().find(Boolean)
+  errorMessage.value = (typeof first === 'string' ? first : String(first)) || 'Revisa los campos del formulario'
+}
 
 const onSubmit = handleSubmit(async (values) => {
   if (!selectedCategoryId.value) {
@@ -148,9 +154,9 @@ const onSubmit = handleSubmit(async (values) => {
     successMessage.value = 'Inscripción registrada. Revisaremos tu comprobante y te notificaremos por correo.'
   }
   catch (e: any) {
-    const errors = e?.data?.errors
-    if (errors) {
-      const first = Object.values(errors).flat()[0]
+    const errs = e?.data?.errors
+    if (errs) {
+      const first = Object.values(errs).flat()[0]
       errorMessage.value = typeof first === 'string' ? first : 'Error al procesar la inscripción'
     }
     else {
@@ -160,13 +166,17 @@ const onSubmit = handleSubmit(async (values) => {
   finally {
     isLoading.value = false
   }
-})
+}, onInvalid)
 
 function selectGuest() {
   registrationMode.value = 'guest'
 }
 function selectGoogle() {
   navigateTo(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+}
+
+function triggerComprobanteClick() {
+  comprobanteInput?.value?.click()
 }
 </script>
 
@@ -229,6 +239,24 @@ function selectGoogle() {
     </div>
 
     <form v-else-if="user || registrationMode === 'guest'" class="space-y-4" @submit="onSubmit">
+      <!-- Banner: usuario logueado con Google -->
+      <div v-if="user && !isGuestMode" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+        <div class="flex items-center gap-2">
+          <Icon name="i-lucide-user-check" class="size-5 text-emerald-600 dark:text-emerald-400" />
+          <span class="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+            Inscribiéndote como <strong>{{ user.name }}</strong>
+            <span class="text-emerald-600 dark:text-emerald-400">({{ user.email }})</span>
+          </span>
+        </div>
+        <button
+          type="button"
+          class="text-xs text-emerald-600 underline hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-200"
+          @click="async () => { await logout(); await navigateTo(`/login?redirect=${encodeURIComponent(route.fullPath)}`) }"
+        >
+          Usar otra cuenta
+        </button>
+      </div>
+
       <div v-if="successMessage" class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 text-sm dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
         {{ successMessage }}
       </div>
@@ -339,19 +367,45 @@ function selectGoogle() {
       </div>
 
       <div class="space-y-2">
-        <Label for="comprobante">Comprobante de pago * (PDF, JPG o PNG, máx. 5 MB)</Label>
-        <Input
-          id="comprobante"
-          type="file"
-          accept=".pdf,.jpg,.jpeg,.png"
-          class="file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:px-4 file:py-2 file:text-white"
-          @change="(e: Event) => {
-            const target = e.target as HTMLInputElement
-            const file = target.files?.[0]
-            if (file) setFieldValue('comprobante', file)
-          }"
-        />
-        <p v-if="comprobanteAttrs.errorMessage" class="text-sm text-red-400">
+        <Label for="comprobante">Comprobante de pago *</Label>
+        <div
+          class="relative flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 transition hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-slate-600 dark:bg-slate-900/50 dark:hover:border-emerald-500 dark:hover:bg-emerald-500/5"
+          :class="{ 'border-red-400 dark:border-red-500': comprobanteAttrs.errorMessage }"
+          @click="triggerComprobanteClick"
+        >
+          <input
+            ref="comprobanteInput"
+            id="comprobante"
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png,image/jpg"
+            class="sr-only"
+            @change="(e: Event) => {
+              const target = e.target as HTMLInputElement
+              const file = target.files?.[0]
+              if (file) setFieldValue('comprobante', file)
+            }"
+          />
+          <Icon
+            v-if="!comprobante"
+            name="i-lucide-upload"
+            class="size-10 text-slate-400 dark:text-slate-500"
+          />
+          <Icon
+            v-else
+            name="i-lucide-file-check"
+            class="size-10 text-emerald-500 dark:text-emerald-400"
+          />
+          <p v-if="!comprobante" class="text-center text-sm text-slate-600 dark:text-slate-400">
+            Haz clic o arrastra tu archivo aquí
+          </p>
+          <p v-else class="text-center text-sm font-medium text-emerald-700 dark:text-emerald-300">
+            {{ comprobante.name }}
+          </p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            PDF, JPG o PNG — máx. 5 MB
+          </p>
+        </div>
+        <p v-if="comprobanteAttrs.errorMessage" class="text-sm text-red-500 dark:text-red-400">
           {{ comprobanteAttrs.errorMessage }}
         </p>
       </div>
