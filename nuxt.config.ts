@@ -40,6 +40,7 @@ export default defineNuxtConfig({
 
   colorMode: {
     classSuffix: "",
+    preference: "system",
   },
 
   eslint: {

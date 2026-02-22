@@ -83,7 +83,7 @@ const { handleSubmit, setFieldValue, defineField } = useForm({
     guest_email: '',
     fecha_nacimiento: '',
     identificacion: '',
-    eps: '',
+    eps: '__none__',
     talla_camisa: undefined as (typeof TALLAS)[number] | undefined,
     grupo_sanguineo: '',
     departamento: '',
@@ -187,7 +187,7 @@ const onSubmit = handleSubmit(async (values) => {
       formData.append('guest_email', values.guest_email!)
     }
     formData.append('identificacion', values.identificacion)
-    if (values.eps) formData.append('eps', values.eps)
+    if (values.eps && values.eps !== '__none__') formData.append('eps', values.eps)
     if (values.talla_camisa) formData.append('talla_camisa', values.talla_camisa)
     if (values.grupo_sanguineo) formData.append('grupo_sanguineo', values.grupo_sanguineo)
     if (values.departamento) formData.append('departamento', values.departamento)
@@ -289,7 +289,7 @@ function triggerComprobanteClick() {
       </div>
     </div>
 
-    <form v-else-if="user || registrationMode === 'guest'" class="space-y-4" @submit="onSubmit">
+    <form v-else-if="user || registrationMode === 'guest'" class="space-y-6" @submit="onSubmit">
       <!-- Banner: usuario logueado con Google -->
       <div v-if="user && !isGuestMode" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
         <div class="flex items-center gap-2">
@@ -329,174 +329,174 @@ function triggerComprobanteClick() {
         </Button>
       </div>
 
-      <!-- Campos guest (solo cuando no hay usuario) -->
-      <div v-if="isGuestMode" class="grid gap-4 sm:grid-cols-2">
-        <div class="space-y-2">
-          <Label for="guest_name">Nombre completo *</Label>
-          <Input
-            id="guest_name"
-            v-model="guestName"
-            v-bind="guestNameAttrs"
-            placeholder="Tu nombre"
-          />
-          <p v-if="guestNameAttrs.errorMessage" class="text-sm text-red-400">
-            {{ guestNameAttrs.errorMessage }}
-          </p>
+      <!-- Sección 1: Datos personales -->
+      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4">
+        <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+          <Icon name="i-lucide-user" class="size-4" />
+          Datos personales
+        </h4>
+        <div v-if="isGuestMode" class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2">
+            <Label for="guest_name">Nombre completo *</Label>
+            <Input
+              id="guest_name"
+              v-model="guestName"
+              v-bind="guestNameAttrs"
+              placeholder="Ej: Juan Pérez"
+            />
+            <p v-if="guestNameAttrs.errorMessage" class="text-sm text-red-500">{{ guestNameAttrs.errorMessage }}</p>
+          </div>
+          <div class="space-y-2">
+            <Label for="guest_email">Correo electrónico *</Label>
+            <Input
+              id="guest_email"
+              v-model="guestEmail"
+              type="email"
+              v-bind="guestEmailAttrs"
+              placeholder="Ej: juan@correo.com"
+            />
+            <p v-if="guestEmailAttrs.errorMessage" class="text-sm text-red-500">{{ guestEmailAttrs.errorMessage }}</p>
+          </div>
         </div>
-        <div class="space-y-2">
-          <Label for="guest_email">Correo electrónico *</Label>
-          <Input
-            id="guest_email"
-            v-model="guestEmail"
-            type="email"
-            v-bind="guestEmailAttrs"
-            placeholder="tu@correo.com"
-          />
-          <p v-if="guestEmailAttrs.errorMessage" class="text-sm text-red-400">
-            {{ guestEmailAttrs.errorMessage }}
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div class="space-y-2">
-          <Label for="fecha_nacimiento">Fecha de nacimiento *</Label>
-          <Input
-            id="fecha_nacimiento"
-            v-model="fechaNacimiento"
-            type="date"
-            v-bind="fechaNacimientoAttrs"
-          />
-          <p v-if="fechaNacimientoAttrs.errorMessage" class="text-sm text-red-400">
-            {{ fechaNacimientoAttrs.errorMessage }}
-          </p>
-        </div>
-        <div class="space-y-2">
-          <Label>Categoría asignada</Label>
-          <p class="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
-            {{ categories.find(c => c.id === selectedCategoryId)?.name ?? 'Selecciona fecha de nacimiento' }}
-            <span v-if="selectedCategoryId" class="ml-2 font-semibold text-emerald-600 dark:text-emerald-400">
-              ${{ (categories.find(c => c.id === selectedCategoryId)?.precio ?? props.precioBase ?? 0).toLocaleString('es-CO') }}
-            </span>
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="space-y-2">
-          <Label for="identificacion">Cédula o documento *</Label>
-          <Input
-            id="identificacion"
-            v-model="identificacion"
-            v-bind="identificacionAttrs"
-            placeholder="Número de identificación"
-          />
-          <p v-if="identificacionAttrs.errorMessage" class="text-sm text-red-400">
-            {{ identificacionAttrs.errorMessage }}
-          </p>
-        </div>
-        <div class="space-y-2">
-          <Label for="eps">EPS (opcional)</Label>
-          <Select v-model="eps" v-bind="epsAttrs">
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona tu EPS" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">
-                No especificado
-              </SelectItem>
-              <SelectItem v-for="e in epsList" :key="e" :value="e">
-                {{ e }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div class="space-y-2">
-          <Label for="talla_camisa">Talla de camisa</Label>
-          <Select v-model="tallaCamisa" v-bind="tallaCamisaAttrs">
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona talla" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="t in TALLAS" :key="t" :value="t">
-                {{ t }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2">
+            <Label for="fecha_nacimiento">Fecha de nacimiento *</Label>
+            <Input
+              id="fecha_nacimiento"
+              v-model="fechaNacimiento"
+              type="date"
+              v-bind="fechaNacimientoAttrs"
+            />
+            <p v-if="fechaNacimientoAttrs.errorMessage" class="text-sm text-red-500">{{ fechaNacimientoAttrs.errorMessage }}</p>
+          </div>
+          <div class="space-y-2">
+            <Label>Categoría y precio</Label>
+            <div class="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-4 py-3">
+              <span class="font-medium text-slate-900 dark:text-white">{{ categories.find(c => c.id === selectedCategoryId)?.name ?? 'Selecciona fecha de nacimiento' }}</span>
+              <span v-if="selectedCategoryId" class="ml-2 font-semibold text-emerald-600 dark:text-emerald-400">
+                ${{ (categories.find(c => c.id === selectedCategoryId)?.precio ?? props.precioBase ?? 0).toLocaleString('es-CO') }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="space-y-2">
-          <Label for="grupo_sanguineo">Grupo sanguíneo</Label>
-          <Select v-model="grupoSanguineo" v-bind="grupoSanguineoAttrs">
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="g in GRUPOS_SANGUINEOS" :key="g" :value="g">
-                {{ g }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div class="space-y-2">
-          <Label for="departamento">Departamento</Label>
-          <Select v-model="departamento" v-bind="departamentoAttrs">
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona departamento" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="d in colombiaData" :key="d.id" :value="d.departamento">
-                {{ d.departamento }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div class="space-y-2">
-          <Label for="ciudad">Ciudad</Label>
-          <Select v-model="ciudad" v-bind="ciudadAttrs" :disabled="!departamento">
-            <SelectTrigger>
-              <SelectValue placeholder="Selecciona ciudad" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="c in ciudadesDisponibles" :key="c" :value="c">
-                {{ c }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div class="space-y-2">
-          <Label for="contacto_emergencia">Contacto de emergencia *</Label>
-          <Input
-            id="contacto_emergencia"
-            v-model="contactoEmergencia"
-            v-bind="contactoEmergenciaAttrs"
-            placeholder="Nombre y teléfono"
-          />
-          <p v-if="contactoEmergenciaAttrs.errorMessage" class="text-sm text-red-400">
-            {{ contactoEmergenciaAttrs.errorMessage }}
-          </p>
+      <!-- Sección 2: Documento e identificación -->
+      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4">
+        <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+          <Icon name="i-lucide-id-card" class="size-4" />
+          Documento e identificación
+        </h4>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="space-y-2">
+            <Label for="identificacion">Cédula o documento *</Label>
+            <Input
+              id="identificacion"
+              v-model="identificacion"
+              v-bind="identificacionAttrs"
+              placeholder="Ej: 123456789"
+            />
+            <p v-if="identificacionAttrs.errorMessage" class="text-sm text-red-500">{{ identificacionAttrs.errorMessage }}</p>
+          </div>
+          <div class="space-y-2">
+            <Label for="eps">EPS</Label>
+            <Select v-model="eps" v-bind="epsAttrs">
+              <SelectTrigger>
+                <SelectValue placeholder="Tu EPS (opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">No especificado</SelectItem>
+                <SelectItem v-for="e in epsList" :key="e" :value="e">{{ e }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="space-y-2">
+            <Label for="talla_camisa">Talla de camisa</Label>
+            <Select v-model="tallaCamisa" v-bind="tallaCamisaAttrs">
+              <SelectTrigger>
+                <SelectValue placeholder="XS, S, M, L..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="t in TALLAS" :key="t" :value="t">{{ t }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="space-y-2">
+            <Label for="grupo_sanguineo">Grupo sanguíneo</Label>
+            <Select v-model="grupoSanguineo" v-bind="grupoSanguineoAttrs">
+              <SelectTrigger>
+                <SelectValue placeholder="A+, B-, O+..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="g in GRUPOS_SANGUINEOS" :key="g" :value="g">{{ g }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
-      <div class="space-y-2">
-        <Label for="direccion">Dirección *</Label>
-        <Input
-          id="direccion"
-          v-model="direccion"
-          v-bind="direccionAttrs"
-          placeholder="Calle, número, barrio"
-        />
-        <p v-if="direccionAttrs.errorMessage" class="text-sm text-red-400">
-          {{ direccionAttrs.errorMessage }}
-        </p>
+      <!-- Sección 3: Ubicación y contacto -->
+      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4">
+        <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+          <Icon name="i-lucide-map-pin" class="size-4" />
+          Ubicación y contacto
+        </h4>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2">
+            <Label for="departamento">Departamento</Label>
+            <Select v-model="departamento" v-bind="departamentoAttrs">
+              <SelectTrigger>
+                <SelectValue placeholder="Ej: Antioquia, Cundinamarca" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="d in colombiaData" :key="d.id" :value="d.departamento">{{ d.departamento }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div class="space-y-2">
+            <Label for="ciudad">Ciudad</Label>
+            <Select v-model="ciudad" v-bind="ciudadAttrs" :disabled="!departamento">
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona ciudad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="c in ciudadesDisponibles" :key="c" :value="c">{{ c }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2">
+            <Label for="direccion">Dirección *</Label>
+            <Input
+              id="direccion"
+              v-model="direccion"
+              v-bind="direccionAttrs"
+              placeholder="Ej: Calle 50 #12-34, Barrio Centro"
+            />
+            <p v-if="direccionAttrs.errorMessage" class="text-sm text-red-500">{{ direccionAttrs.errorMessage }}</p>
+          </div>
+          <div class="space-y-2">
+            <Label for="contacto_emergencia">Contacto de emergencia *</Label>
+            <Input
+              id="contacto_emergencia"
+              v-model="contactoEmergencia"
+              v-bind="contactoEmergenciaAttrs"
+              placeholder="Ej: María Pérez - 300 123 4567"
+            />
+            <p v-if="contactoEmergenciaAttrs.errorMessage" class="text-sm text-red-500">{{ contactoEmergenciaAttrs.errorMessage }}</p>
+          </div>
+        </div>
       </div>
 
-      <div class="space-y-2">
-        <Label for="comprobante">Comprobante de pago *</Label>
+      <!-- Sección 4: Comprobante -->
+      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4">
+        <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+          <Icon name="i-lucide-file-up" class="size-4" />
+          Comprobante de pago *
+        </h4>
         <div
-          class="relative flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 transition hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-slate-600 dark:bg-slate-900/50 dark:hover:border-emerald-500 dark:hover:bg-emerald-500/5"
+          class="relative flex min-h-[100px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-5 transition hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-slate-600 dark:bg-slate-900/50 dark:hover:border-emerald-500 dark:hover:bg-emerald-500/5"
           :class="{ 'border-red-400 dark:border-red-500': comprobanteAttrs.errorMessage }"
           @click="triggerComprobanteClick"
         >

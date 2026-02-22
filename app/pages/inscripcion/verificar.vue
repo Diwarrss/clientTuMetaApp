@@ -27,7 +27,7 @@ const registration = computed(() => data.value?.data ?? null)
 
 <template>
   <div class="min-h-screen bg-slate-100 text-slate-900 dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white transition-colors">
-    <LandingHeader show-inicio />
+    <LandingHeader />
 
     <main class="container mx-auto px-4 pt-20 pb-12 max-w-xl">
       <h1 class="text-2xl font-bold mb-8 text-slate-900 dark:text-white">

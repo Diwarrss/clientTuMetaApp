@@ -57,9 +57,9 @@ const event = computed(() => eventData.value?.data ?? null)
 
 <template>
   <div class="min-h-screen bg-slate-100 text-slate-900 dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white transition-colors">
-    <LandingHeader show-inicio />
+    <LandingHeader />
 
-    <main class="container mx-auto px-4 pt-20 pb-12 max-w-4xl">
+    <main class="container mx-auto px-4 pt-20 pb-12 max-w-6xl">
       <div v-if="pending" class="flex justify-center py-20">
         <Icon name="i-lucide-loader-2" class="size-12 animate-spin text-emerald-400" />
       </div>
@@ -180,12 +180,12 @@ const event = computed(() => eventData.value?.data ?? null)
           </p>
         </div>
 
-        <div class="grid gap-6 mb-12 md:grid-cols-2">
+        <div class="grid gap-6 mb-12 lg:grid-cols-[1fr_2fr]">
           <VerificationForm :event-id="event.id" />
-          <div class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none">
-            <h3 class="text-lg font-semibold mb-2 text-slate-900 dark:text-white">Inscribirse</h3>
-            <p class="text-sm text-muted-foreground mb-4">
-              ¿Aún no te has inscrito? Completa el formulario para participar.
+          <div class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none min-w-0">
+            <h3 class="text-lg font-semibold mb-1 text-slate-900 dark:text-white">Completar inscripción</h3>
+            <p class="text-sm text-muted-foreground mb-6">
+              Completa tus datos y sube el comprobante de pago.
             </p>
             <RegistrationForm
               :event-id="event.id"
