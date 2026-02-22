@@ -58,7 +58,7 @@ async function buscar() {
 </script>
 
 <template>
-  <div class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none">
+  <div class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-4 sm:p-6 shadow-sm dark:shadow-none">
     <h3 class="text-lg font-semibold mb-2 text-slate-900 dark:text-white">
       Verificar inscripción
     </h3>
@@ -95,11 +95,11 @@ async function buscar() {
         {{ errorMessage }}
       </p>
 
-      <div class="flex gap-3">
-        <Button type="button" variant="outline" :disabled="loading" @click="reset">
+      <div class="flex flex-col-reverse sm:flex-row gap-3">
+        <Button type="button" variant="outline" :disabled="loading" class="w-full sm:w-auto" @click="reset">
           Cancelar
         </Button>
-        <Button type="submit" :disabled="loading">
+        <Button type="submit" :disabled="loading" class="w-full sm:w-auto">
           <Icon v-if="loading" name="i-lucide-loader-2" class="mr-2 size-4 animate-spin" />
           <Icon v-else name="i-lucide-search" class="mr-2 size-4" />
           Buscar inscripción

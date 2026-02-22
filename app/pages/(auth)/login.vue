@@ -23,9 +23,9 @@ onMounted(async () => {
 
 <template>
   <LayoutAuth reverse>
-    <div class="grid mx-auto max-w-sm gap-6">
+    <div class="grid mx-auto w-full max-w-sm gap-6 px-2 sm:px-0">
       <div class="grid gap-2 text-center">
-        <h1 class="text-2xl font-semibold tracking-tight">
+        <h1 class="text-xl sm:text-2xl font-semibold tracking-tight">
           Bienvenido
         </h1>
         <p class="text-balance text-sm text-muted-foreground">

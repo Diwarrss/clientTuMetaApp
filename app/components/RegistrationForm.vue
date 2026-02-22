@@ -291,10 +291,10 @@ function triggerComprobanteClick() {
 
     <form v-else-if="user || registrationMode === 'guest'" class="space-y-6" @submit="onSubmit">
       <!-- Banner: usuario logueado con Google -->
-      <div v-if="user && !isGuestMode" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
-        <div class="flex items-center gap-2">
-          <Icon name="i-lucide-user-check" class="size-5 text-emerald-600 dark:text-emerald-400" />
-          <span class="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+      <div v-if="user && !isGuestMode" class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+        <div class="flex items-center gap-2 min-w-0 flex-1">
+          <Icon name="i-lucide-user-check" class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span class="text-sm font-medium text-emerald-800 dark:text-emerald-200 break-words">
             Inscribiéndote como <strong>{{ user.name }}</strong>
             <span class="text-emerald-600 dark:text-emerald-400">({{ user.email }})</span>
           </span>
@@ -330,7 +330,7 @@ function triggerComprobanteClick() {
       </div>
 
       <!-- Sección 1: Datos personales -->
-      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4">
+      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-3 sm:p-4">
         <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <Icon name="i-lucide-user" class="size-4" />
           Datos personales
@@ -382,12 +382,12 @@ function triggerComprobanteClick() {
       </div>
 
       <!-- Sección 2: Documento e identificación -->
-      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4">
+      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-3 sm:p-4">
         <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <Icon name="i-lucide-id-card" class="size-4" />
           Documento e identificación
         </h4>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <div class="space-y-2">
             <Label for="identificacion">Cédula o documento *</Label>
             <Input
@@ -436,7 +436,7 @@ function triggerComprobanteClick() {
       </div>
 
       <!-- Sección 3: Ubicación y contacto -->
-      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4">
+      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-3 sm:p-4">
         <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <Icon name="i-lucide-map-pin" class="size-4" />
           Ubicación y contacto
@@ -490,13 +490,13 @@ function triggerComprobanteClick() {
       </div>
 
       <!-- Sección 4: Comprobante -->
-      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4">
+      <div class="space-y-4 rounded-lg border border-slate-200/80 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-3 sm:p-4">
         <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
           <Icon name="i-lucide-file-up" class="size-4" />
           Comprobante de pago *
         </h4>
         <div
-          class="relative flex min-h-[100px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-5 transition hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-slate-600 dark:bg-slate-900/50 dark:hover:border-emerald-500 dark:hover:bg-emerald-500/5"
+          class="relative flex min-h-[80px] sm:min-h-[100px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-3 py-4 sm:px-4 sm:py-5 transition hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-slate-600 dark:bg-slate-900/50 dark:hover:border-emerald-500 dark:hover:bg-emerald-500/5"
           :class="{ 'border-red-400 dark:border-red-500': comprobanteAttrs.errorMessage }"
           @click="triggerComprobanteClick"
         >
