@@ -93,6 +93,7 @@ watch(fechaNacimiento, (val) => {
 }, { immediate: true })
 
 const { user, fetchUser } = useAuth()
+const route = useRoute()
 
 onMounted(async () => {
   try {
@@ -165,24 +166,24 @@ function selectGuest() {
   registrationMode.value = 'guest'
 }
 function selectGoogle() {
-  navigateTo(`/login?redirect=${encodeURIComponent($route.fullPath)}`)
+  navigateTo(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
 }
 </script>
 
 <template>
   <div class="space-y-6">
-    <div v-if="inscriptionClosed" class="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-      <p class="text-sm text-red-200">
+    <div v-if="inscriptionClosed" class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
+      <p class="text-sm text-red-800 dark:text-red-200">
         El plazo de inscripción ha vencido.
       </p>
     </div>
     <!-- Pantalla de elección: invitado o Google -->
     <div v-else-if="!user && registrationMode === 'choice'" class="space-y-6">
       <div class="text-center">
-        <h3 class="text-lg font-semibold text-white">
+        <h3 class="text-lg font-semibold text-foreground">
           ¿Cómo te gustaría inscribirte?
         </h3>
-        <p class="mt-1 text-sm text-slate-400">
+        <p class="mt-1 text-sm text-muted-foreground">
           Elige la opción que mejor se adapte a ti
         </p>
       </div>
@@ -190,35 +191,35 @@ function selectGoogle() {
       <div class="space-y-3">
         <button
           type="button"
-          class="flex w-full items-center gap-4 rounded-xl border border-white/20 bg-white/5 p-4 text-left transition hover:border-emerald-500/50 hover:bg-white/10"
+          class="flex w-full items-center gap-4 rounded-xl border border-border bg-muted/50 p-4 text-left transition hover:border-emerald-500/50 hover:bg-muted dark:border-white/20 dark:bg-white/5 dark:hover:border-emerald-500/50 dark:hover:bg-white/10"
           @click="selectGuest"
         >
           <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-emerald-500">
             <Icon name="i-lucide-zap" class="size-6 text-white" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="font-medium text-emerald-400">
+            <p class="font-medium text-emerald-600 dark:text-emerald-400">
               Continuar como invitado
             </p>
-            <p class="text-sm text-slate-400">
+            <p class="text-sm text-muted-foreground">
               Inscripción rápida sin crear cuenta.
             </p>
           </div>
-          <Icon name="i-lucide-chevron-right" class="size-5 shrink-0 text-slate-500" />
+          <Icon name="i-lucide-chevron-right" class="size-5 shrink-0 text-muted-foreground" />
         </button>
 
         <div class="relative">
           <div class="absolute inset-0 flex items-center">
-            <span class="w-full border-t border-white/20" />
+            <span class="w-full border-t border-border dark:border-white/20" />
           </div>
           <div class="relative flex justify-center text-xs uppercase">
-            <span class="bg-slate-900 px-2 text-slate-500">o</span>
+            <span class="bg-background px-2 text-muted-foreground dark:bg-slate-900">o</span>
           </div>
         </div>
 
         <button
           type="button"
-          class="flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-3 transition hover:border-white/30 hover:bg-white/10"
+          class="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-muted/50 px-4 py-3 transition hover:border-emerald-500/50 hover:bg-muted dark:border-white/20 dark:bg-white/5 dark:hover:border-white/30 dark:hover:bg-white/10"
           @click="selectGoogle"
         >
           <Icon name="simple-icons:google" class="size-5" />
@@ -228,10 +229,10 @@ function selectGoogle() {
     </div>
 
     <form v-else-if="user || registrationMode === 'guest'" class="space-y-4" @submit="onSubmit">
-      <div v-if="successMessage" class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-200 text-sm">
+      <div v-if="successMessage" class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 text-sm dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
         {{ successMessage }}
       </div>
-      <div v-else-if="errorMessage" class="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-200 text-sm">
+      <div v-else-if="errorMessage" class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 text-sm dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
         {{ errorMessage }}
       </div>
 
@@ -239,7 +240,7 @@ function selectGoogle() {
       <div v-if="isGuestMode && !successMessage" class="flex justify-start">
         <button
           type="button"
-          class="text-sm text-slate-400 hover:text-white"
+          class="text-sm text-muted-foreground hover:text-foreground"
           @click="registrationMode = 'choice'"
         >
           <Icon name="i-lucide-arrow-left" class="mr-1 inline size-4" />
@@ -256,7 +257,6 @@ function selectGoogle() {
             v-model="guestName"
             v-bind="guestNameAttrs"
             placeholder="Tu nombre"
-            class="bg-white/5 border-white/20 text-white"
           />
           <p v-if="guestNameAttrs.errorMessage" class="text-sm text-red-400">
             {{ guestNameAttrs.errorMessage }}
@@ -270,7 +270,6 @@ function selectGoogle() {
             type="email"
             v-bind="guestEmailAttrs"
             placeholder="tu@correo.com"
-            class="bg-white/5 border-white/20 text-white"
           />
           <p v-if="guestEmailAttrs.errorMessage" class="text-sm text-red-400">
             {{ guestEmailAttrs.errorMessage }}
@@ -286,7 +285,6 @@ function selectGoogle() {
             v-model="fechaNacimiento"
             type="date"
             v-bind="fechaNacimientoAttrs"
-            class="bg-white/5 border-white/20 text-white"
           />
           <p v-if="fechaNacimientoAttrs.errorMessage" class="text-sm text-red-400">
             {{ fechaNacimientoAttrs.errorMessage }}
@@ -294,9 +292,9 @@ function selectGoogle() {
         </div>
         <div class="space-y-2">
           <Label>Categoría asignada</Label>
-          <p class="rounded-lg bg-white/5 px-3 py-2 text-sm text-slate-300">
+          <p class="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
             {{ categories.find(c => c.id === selectedCategoryId)?.name ?? 'Selecciona fecha de nacimiento' }}
-            <span v-if="selectedCategoryId" class="ml-2 font-semibold text-emerald-400">
+            <span v-if="selectedCategoryId" class="ml-2 font-semibold text-emerald-600 dark:text-emerald-400">
               ${{ (categories.find(c => c.id === selectedCategoryId)?.precio ?? props.precioBase ?? 0).toLocaleString('es-CO') }}
             </span>
           </p>
@@ -305,13 +303,12 @@ function selectGoogle() {
 
       <div class="space-y-2">
         <Label for="identificacion">Número de identificación *</Label>
-        <Input
-          id="identificacion"
-          v-model="identificacion"
-          v-bind="identificacionAttrs"
-          placeholder="Cédula o documento"
-          class="bg-white/5 border-white/20 text-white"
-        />
+          <Input
+            id="identificacion"
+            v-model="identificacion"
+            v-bind="identificacionAttrs"
+            placeholder="Cédula o documento"
+          />
         <p v-if="identificacionAttrs.errorMessage" class="text-sm text-red-400">
           {{ identificacionAttrs.errorMessage }}
         </p>
@@ -319,19 +316,18 @@ function selectGoogle() {
 
       <div class="space-y-2">
         <Label for="eps">EPS (opcional)</Label>
-        <Input
-          id="eps"
-          v-model="eps"
-          v-bind="epsAttrs"
-          placeholder="Nombre de tu EPS"
-          class="bg-white/5 border-white/20 text-white"
-        />
+          <Input
+            id="eps"
+            v-model="eps"
+            v-bind="epsAttrs"
+            placeholder="Nombre de tu EPS"
+          />
       </div>
 
       <div class="space-y-2">
         <Label for="talla_camisa">Talla de camisa</Label>
         <Select v-model="tallaCamisa" v-bind="tallaCamisaAttrs">
-          <SelectTrigger class="bg-white/5 border-white/20 text-white">
+          <SelectTrigger>
             <SelectValue placeholder="Selecciona talla" />
           </SelectTrigger>
           <SelectContent>
@@ -348,7 +344,7 @@ function selectGoogle() {
           id="comprobante"
           type="file"
           accept=".pdf,.jpg,.jpeg,.png"
-          class="bg-white/5 border-white/20 text-white file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:px-4 file:py-2 file:text-white"
+          class="file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-500 file:px-4 file:py-2 file:text-white"
           @change="(e: Event) => {
             const target = e.target as HTMLInputElement
             const file = target.files?.[0]

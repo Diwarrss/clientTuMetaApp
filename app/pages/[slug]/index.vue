@@ -125,7 +125,7 @@ const event = computed(() => eventData.value?.data ?? null)
           </div>
         </div>
 
-        <div v-if="event.inscription_deadline" class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 mb-12 text-amber-200 text-sm">
+        <div v-if="event.inscription_deadline" class="rounded-lg border border-amber-200 bg-amber-50 p-4 mb-12 text-amber-800 text-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
           Inscripciones hasta: {{ new Date(event.inscription_deadline).toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}
         </div>
 
@@ -180,7 +180,7 @@ const event = computed(() => eventData.value?.data ?? null)
           </p>
         </div>
 
-        <div class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm dark:shadow-none">
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none">
           <h2 class="text-xl font-semibold mb-6 text-slate-900 dark:text-white">Inscripción</h2>
           <RegistrationForm
             :event-id="event.id"

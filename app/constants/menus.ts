@@ -32,6 +32,12 @@ export const navMenu: NavMenu[] = [
         link: '/admin/company',
         permission: 'events.view',
       },
+      {
+        title: 'Contrato',
+        icon: 'i-lucide-file-signature',
+        link: '/admin/contract',
+        permission: 'events.view',
+      },
     ],
   },
   {
